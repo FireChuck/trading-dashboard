@@ -24,8 +24,8 @@
     const dark = document.documentElement.getAttribute('data-theme') === 'dark';
 
     const bots = [
-      { id: 'momentumAlpha', name: names.momentumAlpha, data: all.momentumAlpha, color: colors.momentumAlpha },
-      { id: 'meanReverter', name: names.meanReverter, data: all.meanReverter, color: colors.meanReverter },
+      { id: 'alphaTrader', name: names.alphaTrader, data: all.alphaTrader, color: colors.alphaTrader },
+      { id: 'trendRider', name: names.trendRider, data: all.trendRider, color: colors.trendRider },
       { id: 'scalpMaster', name: names.scalpMaster, data: all.scalpMaster, color: colors.scalpMaster }
     ].map(b => ({ ...b, tf: b.data.monthly }));
 
@@ -75,7 +75,7 @@
       @keyframes csu{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
       @keyframes hfi{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
       @keyframes cpulse{0%,100%{transform:scale(1)}50%{transform:scale(1.08)}}
-      .lt{width:100%;border-collapse:collapse;}
+      .lt{width:100%;border-collapse:collapse;table-layout:fixed;}
       @media(max-width:768px){.bcg{grid-template-columns:1fr!important;}}
       @media(min-width:769px) and (max-width:1024px){.bcg{grid-template-columns:1fr 1fr!important;}}
     </style>
@@ -123,7 +123,7 @@
         animVal(el, Math.abs(v), 1200, v >= 0 ? '+$' : '-$', '');
       });
       // Bind click → navigate to dashboard with selected bot
-      const idMap = { momentumAlpha: 'momentum-alpha', meanReverter: 'mean-reverter', scalpMaster: 'scalp-master' };
+      const idMap = { alphaTrader: 'alpha-trader', trendRider: 'trend-rider', scalpMaster: 'scalp-master' };
       _c.querySelectorAll('.bot-landing-card').forEach(card => {
         card.addEventListener('click', () => {
           const botId = idMap[card.dataset.botId];

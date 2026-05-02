@@ -15,11 +15,11 @@
   <header class="header">
     <div class="header-inner">
       <div class="header-left">
-        <button class="logo-btn" id="logoBtn" title="Dashboard Home">📊</button>
-        <div class="bot-switcher" id="botSwitcher"></div>
+        <button class="logo-btn" id="logoBtn" title="Dashboard Home" aria-label="Navigate to landing page">📊</button>
+        <nav class="bot-switcher" id="botSwitcher" role="tablist" aria-label="Select trading bot"></nav>
       </div>
       <div class="header-right">
-        <div class="timeframe-selector" id="timeframeSelector">
+        <div class="timeframe-selector" id="timeframeSelector" role="group" aria-label="Select timeframe">
           <button class="tf-btn active" data-tf="daily">Daily</button>
           <button class="tf-btn" data-tf="weekly">Weekly</button>
           <button class="tf-btn" data-tf="monthly">Monthly</button>

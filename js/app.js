@@ -55,7 +55,7 @@ const App = (() => {
       surface:  '#F5F5F4',
       text:     '#1C1917',      // 14.5:1 on #F5F5F4
       textMuted:'#78716C',      // 4.6:1 on #F5F5F4
-      textTertiary: '#A8A29E',  // 2.8:1 on #F5F5F4 (decorative)
+      textTertiary: '#78716C',  // 4.6:1 on #F5F5F4
       border:   '#E7E5E4',
       borderLight: '#F0EEEC',
       profit:   '#16A34A',      // 4.6:1 on #F5F5F4
@@ -190,7 +190,10 @@ const App = (() => {
     });
   }
 
-  // ── Update All Viz ──
+  // ── Update All Viz (with IntersectionObserver lazy rendering) ──
+  let observer = null;
+  const renderedCards = new Set();
+
   function update() {
     const bot = MOCK_DATA.bots[currentBot];
     if (!bot) return;
@@ -200,26 +203,48 @@ const App = (() => {
 
     const tfData = bot[currentTimeframe];
 
-    containerModuleMap.forEach(({ id, module, type }) => {
-      const mod = module();
-      if (!mod || typeof mod.init !== 'function') return;
+    // Disconnect old observer
+    if (observer) observer.disconnect();
+    renderedCards.clear();
 
+    observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const cardId = entry.target.id.replace('card-', '');
+          if (!renderedCards.has(cardId)) {
+            renderedCards.add(cardId);
+            const mapping = containerModuleMap.find(m => m.id === cardId);
+            if (mapping) renderViz(mapping);
+          }
+        }
+      });
+    }, { rootMargin: '100px', threshold: 0.01 });
+
+    containerModuleMap.forEach(({ id, module, type }) => {
       const container = document.getElementById(`card-${id}`);
       if (!container) return;
-
-      // Destroy previous instance (memory leak prevention)
-      if (typeof mod.destroy === 'function') {
-        try { mod.destroy(); } catch (e) { /* ignore */ }
-      }
-
-      if (type === 'legacy') {
-        // Original 7: init(bot, tfData, timeframe, isDark)
-        mod.init(bot, tfData, currentTimeframe, isDark);
-      } else {
-        // Newer 13: init(container, botData, timeframe)
-        mod.init(container, bot, currentTimeframe);
-      }
+      observer.observe(container);
     });
+  }
+
+  function renderViz({ id, module }) {
+    const mod = module();
+    if (!mod || typeof mod.render !== 'function') return;
+
+    const container = document.getElementById(`card-${id}`);
+    if (!container) return;
+
+    if (typeof mod.destroy === 'function') {
+      try { mod.destroy(); } catch (e) { /* ignore */ }
+    }
+
+    mod.render(container, currentBot, currentTimeframe);
+  }
+
+  // Force-render all (fallback for testing / small viewports)
+  function renderAll() {
+    if (observer) observer.disconnect();
+    containerModuleMap.forEach(mapping => renderViz(mapping));
   }
 
   // Boot
@@ -229,7 +254,7 @@ const App = (() => {
     init();
   }
 
-  const api = { update, getTheme: () => isDark, showDashboard, showLanding };
+  const api = { update, renderAll, getTheme: () => isDark, showDashboard, showLanding, getCurrentBot: () => currentBot, getCurrentTimeframe: () => currentTimeframe };
   window.App = api;
   return api;
 })();

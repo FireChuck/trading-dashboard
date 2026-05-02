@@ -1,42 +1,88 @@
 /**
- * viz-signal-timeline.js — A10: Vertical Signal Timeline (Custom HTML/CSS)
- * Scrollable feed with animated entries, color-coded by P&L.
+ * viz-signal-timeline.js — Signal Timeline
+ * Unified API: render(container, botId, timeframe)
+ * Data source: getMockData(botId, timeframe).signals
  */
-(function(){
+(function() {
   'use strict';
-  const S={container:null,ro:null,obs:null};
-  function theme(){const T=window.ThemeColors();return{bg:T.bgSecondary,cardBg:T.cardBg,text:T.text,muted:T.textMuted,profit:T.profit,loss:T.loss,line:T.line};}
-  function render(botData,tf){
-    if(!S.container)return;const T=theme(),data=botData[tf]||botData.daily,sigs=data.signals||[],H=360;
-    let h=`<div style="position:relative;width:100%;height:${H}px;overflow:hidden">`;
-    h+=`<div style="font-size:13px;font-weight:600;color:${T.text};margin-bottom:10px;font-family:var(--sans);display:flex;justify-content:space-between;align-items:center"><span>Signal Timeline</span><span style="font-size:11px;color:${T.muted};font-weight:400">${sigs.length} signals</span></div>`;
-    h+=`<div style="position:relative;height:calc(100% - 30px);overflow-y:auto;overflow-x:hidden;padding-right:4px" class="ss">`;
-    h+=`<div style="position:absolute;left:52px;top:0;bottom:0;width:2px;background:${T.line};border-radius:1px"></div>`;
-    sigs.forEach((s,i)=>{
-      const win=s.pnl>=0,pc=win?T.profit:T.loss;
-      const dbg=win?(T.cardBg==='#FFF'?'#F0FDF4':'#0D2818'):(T.cardBg==='#FFF'?'#FEF2F2':'#2D1215');
-      const db=win?'rgba(22,163,74,.2)':'rgba(220,38,38,.2)';
-      h+=`<div class="se" style="display:flex;align-items:flex-start;margin-bottom:8px;opacity:0;animation:sfi .3s ease ${i*50}ms forwards">`;
-      h+=`<div style="min-width:42px;text-align:right;padding-right:12px;padding-top:8px"><div style="font-size:10px;color:${T.muted};font-family:var(--mono)">${s.time}</div></div>`;
-      h+=`<div style="position:relative;z-index:1"><div style="width:12px;height:12px;border-radius:50%;background:${pc};border:2px solid ${T.cardBg};margin-top:8px;box-shadow:0 0 0 2px ${pc}40"></div></div>`;
-      h+=`<div style="flex:1;margin-left:12px;background:${T.cardBg};border:1px solid ${db};border-radius:10px;padding:10px 14px;min-width:0;box-shadow:var(--shadow-sm)">`;
-      h+=`<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px"><span style="font-size:11px;font-weight:600;color:${pc};font-family:var(--sans);text-transform:uppercase;letter-spacing:.5px">${s.direction}</span><span style="font-size:12px;font-weight:700;color:${pc};font-family:var(--mono)">${win?'+':''}$${s.pnl.toLocaleString()}</span></div>`;
-      h+=`<div style="display:flex;gap:8px;flex-wrap:wrap"><span style="font-size:11px;color:${T.text};font-family:var(--mono);font-weight:500">${s.pair}</span><span style="font-size:10px;color:${T.muted};font-family:var(--sans)">@ ${s.entry.toLocaleString()}</span><span style="font-size:10px;color:${T.muted};font-family:var(--sans);background:${T.bg};padding:1px 6px;border-radius:4px">${s.session}</span></div>`;
-      h+=`</div></div>`;
-    });
-    h+=`</div></div>`;
-    if(!document.getElementById('stlCSS')){
-      const st=document.createElement('style');st.id='stlCSS';
-      st.textContent=`@keyframes sfi{from{opacity:0;transform:translateX(-8px)}to{opacity:1;transform:translateX(0)}}.ss::-webkit-scrollbar{width:4px}.ss::-webkit-scrollbar-track{background:transparent}.ss::-webkit-scrollbar-thumb{background:var(--border-primary);border-radius:4px}`;
-      document.head.appendChild(st);
-    }
-    S.container.innerHTML=h;
-    const el=S.container.querySelector('.ss');
-    if(el)setTimeout(()=>{el.scrollTop=el.scrollHeight;},sigs.length*50+100);
+  let _container = null;
+  let _themeObs = null;
+
+  function theme() {
+    const T = window.ThemeColors ? window.ThemeColors() : {};
+    return {
+      bg: T.bgSecondary || 'var(--bg-secondary)',
+      cardBg: T.cardBg || 'var(--card-bg)',
+      text: T.text || 'var(--text-primary)',
+      muted: T.textMuted || 'var(--text-muted)',
+      profit: T.profit || 'var(--profit)',
+      loss: T.loss || 'var(--loss)',
+      line: T.line || 'var(--border-primary)',
+    };
   }
-  window.VizSignalTimeline={
-    init(c,b,t){S.container=c;render(b,t);S.ro=new ResizeObserver(()=>{if(S._b)render(S._b,S._t)});S.ro.observe(c);S.obs=new MutationObserver(()=>{if(S._b)render(S._b,S._t)});S.obs.observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});},
-    update(b,t){S._b=b;S._t=t;render(b,t);},
-    destroy(){if(S.ro)S.ro.disconnect();if(S.obs)S.obs.disconnect();if(S.container)S.container.innerHTML='';S.container=null;}
-  };
+
+  function injectStyles() {
+    if (document.getElementById('viz-signal-timeline-css')) return;
+    const s = document.createElement('style');
+    s.id = 'viz-signal-timeline-css';
+    s.textContent = `
+      @keyframes viz-stl-enter { from { opacity:0; transform:translateX(-8px); } to { opacity:1; transform:translateX(0); } }
+      .viz-stl-scroll::-webkit-scrollbar { width:4px; }
+      .viz-stl-scroll::-webkit-scrollbar-track { background:transparent; }
+      .viz-stl-scroll::-webkit-scrollbar-thumb { background:var(--border-primary); border-radius:4px; }
+    `;
+    document.head.appendChild(s);
+  }
+
+  function render(container, botId, timeframe) {
+    if (!container) return;
+    _container = container;
+    injectStyles();
+
+    const data = typeof getMockData === 'function' ? getMockData(botId, timeframe) : null;
+    const signals = data?.signals || [];
+    const T = theme();
+
+    let h = '<div style="position:relative;width:100%;height:360px;overflow:hidden">';
+    h += `<div style="font-size:13px;font-weight:600;color:${T.text};margin-bottom:10px;font-family:var(--sans);display:flex;justify-content:space-between;align-items:center">`;
+    h += `<span>Signal Timeline</span>`;
+    h += `<span style="font-size:11px;color:${T.muted};font-weight:400">${signals.length} signals</span></div>`;
+    h += `<div class="viz-stl-scroll" style="position:relative;height:calc(100% - 30px);overflow-y:auto;overflow-x:hidden;padding-right:4px">`;
+    h += `<div style="position:absolute;left:52px;top:0;bottom:0;width:2px;background:${T.line};border-radius:1px"></div>`;
+
+    signals.forEach((s, i) => {
+      const win = s.pnl >= 0;
+      const pc = win ? T.profit : T.loss;
+      const border = win ? 'rgba(22,163,74,.2)' : 'rgba(220,38,38,.2)';
+
+      h += `<div style="display:flex;align-items:flex-start;margin-bottom:8px;opacity:0;animation:viz-stl-enter .3s ease ${i * 50}ms forwards">`;
+      h += `<div style="min-width:42px;text-align:right;padding-right:12px;padding-top:8px"><div style="font-size:10px;color:${T.muted};font-family:var(--mono)">${s.time}</div></div>`;
+      h += `<div style="position:relative;z-index:1"><div style="width:12px;height:12px;border-radius:50%;background:${pc};border:2px solid ${T.cardBg};margin-top:8px;box-shadow:0 0 0 2px ${pc}40"></div></div>`;
+      h += `<div style="flex:1;margin-left:12px;background:${T.cardBg};border:1px solid ${border};border-radius:10px;padding:10px 14px;min-width:0;box-shadow:var(--shadow-sm)">`;
+      h += `<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">`;
+      h += `<span style="font-size:11px;font-weight:600;color:${pc};font-family:var(--sans);text-transform:uppercase;letter-spacing:.5px">${s.direction}</span>`;
+      h += `<span style="font-size:12px;font-weight:700;color:${pc};font-family:var(--mono)">${win ? '+' : ''}$${s.pnl.toLocaleString()}</span></div>`;
+      h += `<div style="display:flex;gap:8px;flex-wrap:wrap">`;
+      h += `<span style="font-size:11px;color:${T.text};font-family:var(--mono);font-weight:500">${s.pair}</span>`;
+      h += `<span style="font-size:10px;color:${T.muted};font-family:var(--sans)">@ ${s.entry.toLocaleString()}</span>`;
+      h += `<span style="font-size:10px;color:${T.muted};font-family:var(--sans);background:${T.bg};padding:1px 6px;border-radius:4px">${s.session}</span>`;
+      h += `</div></div></div>`;
+    });
+
+    h += '</div></div>';
+    container.innerHTML = h;
+
+    const scrollEl = container.querySelector('.viz-stl-scroll');
+    if (scrollEl) {
+      setTimeout(() => { scrollEl.scrollTop = scrollEl.scrollHeight; }, signals.length * 50 + 100);
+    }
+  }
+
+  function destroy() {
+    if (_themeObs) { _themeObs.disconnect(); _themeObs = null; }
+    if (_container) { _container.innerHTML = ''; }
+    _container = null;
+  }
+
+  window.VizSignalTimeline = { render, destroy };
 })();

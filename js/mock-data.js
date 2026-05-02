@@ -1,5 +1,43 @@
-// mock-data.js — Consolidated mock data for 3 bots × 3 timeframes
-// Provides: MOCK_DATA (original 7), MockData (mid 8-15), MockDataFinal (final 16-20 + landing)
+// mock-data.js — Multi-Bot Trading Analytics Mock Data
+// ═══════════════════════════════════════════════════════════════════════════
+//
+// PUBLIC API — use these from any viz module:
+//
+//   getMockData(botId, timeframe)
+//     Returns { bot, timeframe, data } for the requested bot × timeframe.
+//     botId:    'alpha-trader' | 'scalp-master' | 'trend-rider'
+//     timeframe:'daily' | 'weekly' | 'monthly'
+//
+//   getMockData().botIds         → ['alpha-trader', 'scalp-master', 'trend-rider']
+//   getMockData().timeframes     → ['daily', 'weekly', 'monthly']
+//   getMockData().allBotIds      → alias for botIds
+//
+// LEGACY GLOBALS (still exposed for backwards compat):
+//   MOCK_DATA       → { botIds, bots } — original 7-module interface
+//   MockData        → mid modules (A8-B15)
+//   MockDataFinal   → final modules (B16-B20 + landing)
+//
+// DATA STRUCTURE per bot × timeframe:
+//   {
+//     kpis:          { totalTrades, winRate, totalPnl, profitFactor, sharpe, maxDrawdown, avgWin, avgLoss, … },
+//     trades:        Array<Trade>,        // raw trade objects
+//     sessionStats:  Array<SessionStat>,
+//     pairPnl:       Array<PairPnl>,
+//     rrDistribution:Array<RRBucket>,
+//     equityCurve:   Array<{date, equity}>,
+//     signals:       Array<Signal>,
+//     allocation:    { pairName: percent, … },
+//     correlation:   { botId: { botId: coeff, … }, … },
+//     sharpeTrend:   Array<number>,        // 6-point rolling sharpe
+//     riskRadar:     { labels, values },   // 6-dimension risk profile
+//     drawdownCurve: Array<{date, dd}>,
+//     streaks:       Array<{id, type}>,
+//     monthlyPnl:    { 'YYYY-MM': number, … },
+//     equity:        Array<number>,        // cumulative equity
+//     bestTrade:     Trade,
+//     worstTrade:    Trade,
+//   }
+// ═══════════════════════════════════════════════════════════════════════════
 
 const MOCK_DATA = (() => {
   // ── Helpers ──
@@ -141,6 +179,8 @@ const MOCK_DATA = (() => {
       winCount: wins.length,
       lossCount: losses.length,
       maxDD: Math.round((peak2 - cum + (cum < 0 ? 0 : 0)) * 100) / 100 || Math.round(maxDD * 10000 * 100) / 100,
+      maxWinStreak: mws,
+      maxLossStreak: mls,
       bestTrade, worstTrade, streaks, monthlyPnl, equity: equityArr, drawdownCurve,
     };
   }
@@ -232,45 +272,45 @@ const MOCK_DATA = (() => {
 
   // ── Bot Configs ──
   const botConfigs = {
-    'momentum-alpha': {
-      name: 'Momentum Alpha',
-      tagline: 'Trendfolger · High Frequency',
-      winRate: 0.58,
+    'alpha-trader': {
+      name: 'AlphaTrader Pro',
+      tagline: 'Conservative · High Win Rate · Moderate Profit',
+      winRate: 0.66,
       pairs: ['NQ', 'ES', 'YM'],
       sessions: ['European', 'US'],
-      minTradesPerDay: 4,
-      maxTradesPerDay: 8,
-      avgWinMin: 30, avgWinMax: 120,
-      avgLossMin: 20, avgLossMax: 80,
+      minTradesPerDay: 2,
+      maxTradesPerDay: 5,
+      avgWinMin: 40, avgWinMax: 150,
+      avgLossMin: 25, avgLossMax: 90,
     },
-    'mean-reverter': {
-      name: 'Mean Reverter',
-      tagline: 'Statistical Arbitrage · Moderate',
-      winRate: 0.65,
-      pairs: ['MNQ', 'MES', 'MYM'],
+    'scalp-master': {
+      name: 'ScalpMaster X',
+      tagline: 'Aggressive · High Frequency · Volatile P&L',
+      winRate: 0.54,
+      pairs: ['NQ', 'MNQ', 'ES', 'MES'],
+      sessions: ['European', 'US'],
+      minTradesPerDay: 10,
+      maxTradesPerDay: 22,
+      avgWinMin: 8, avgWinMax: 35,
+      avgLossMin: 6, avgLossMax: 30,
+    },
+    'trend-rider': {
+      name: 'TrendRider AI',
+      tagline: 'Trend Following · Long Holds · Steady Growth',
+      winRate: 0.60,
+      pairs: ['NQ', 'ES', 'GC', 'CL'],
       sessions: ['Asian', 'European', 'US'],
       minTradesPerDay: 1,
       maxTradesPerDay: 3,
-      avgWinMin: 50, avgWinMax: 200,
-      avgLossMin: 30, avgLossMax: 120,
-    },
-    'scalp-master': {
-      name: 'Scalp Master',
-      tagline: 'HFT Scalping · Ultra Frequency',
-      winRate: 0.55,
-      pairs: ['NQ', 'MNQ', 'ES', 'MES'],
-      sessions: ['European', 'US'],
-      minTradesPerDay: 8,
-      maxTradesPerDay: 18,
-      avgWinMin: 10, avgWinMax: 40,
-      avgLossMin: 8, avgLossMax: 35,
+      avgWinMin: 80, avgWinMax: 300,
+      avgLossMin: 40, avgLossMax: 150,
     },
   };
 
   const correlationMatrix = {
-    'momentum-alpha': { 'momentum-alpha': 1.0, 'mean-reverter': 0.35, 'scalp-master': 0.12 },
-    'mean-reverter': { 'momentum-alpha': 0.35, 'mean-reverter': 1.0, 'scalp-master': 0.28 },
-    'scalp-master': { 'momentum-alpha': 0.12, 'mean-reverter': 0.28, 'scalp-master': 1.0 },
+    'alpha-trader': { 'alpha-trader': 1.0, 'scalp-master': 0.18, 'trend-rider': 0.42 },
+    'scalp-master': { 'alpha-trader': 0.18, 'scalp-master': 1.0, 'trend-rider': 0.10 },
+    'trend-rider': { 'alpha-trader': 0.42, 'scalp-master': 0.10, 'trend-rider': 1.0 },
   };
 
   // ── Generate data ──
@@ -429,41 +469,41 @@ const MOCK_DATA = (() => {
     getAllBots: () => mockDataBots,
     getBotNames: () => Object.keys(mockDataBots),
     getTimeframes: () => ['daily', 'weekly', 'monthly'],
-    getMomentumAlpha: () => mockDataBots['momentum-alpha'],
-    getMeanReverter: () => mockDataBots['mean-reverter'],
+    getAlphaTrader: () => mockDataBots['alpha-trader'],
+    getTrendRider: () => mockDataBots['trend-rider'],
     getScalpMaster: () => mockDataBots['scalp-master'],
   };
 
   // MockDataFinal (final modules B16-B20 + landing)
   const botColors = {
-    'momentum-alpha': { main: '#5B8DEF', light: '#93C5FD', dark: '#1E40AF', bg: 'rgba(91,141,239,0.08)' },
-    'mean-reverter': { main: '#F59E0B', light: '#FCD34D', dark: '#B45309', bg: 'rgba(245,158,11,0.08)' },
+    'alpha-trader': { main: '#5B8DEF', light: '#93C5FD', dark: '#1E40AF', bg: 'rgba(91,141,239,0.08)' },
+    'trend-rider': { main: '#F59E0B', light: '#FCD34D', dark: '#B45309', bg: 'rgba(245,158,11,0.08)' },
     'scalp-master': { main: '#10B981', light: '#6EE7B7', dark: '#065F46', bg: 'rgba(16,185,129,0.08)' },
   };
   const botNames = {
-    'momentum-alpha': 'Momentum Alpha',
-    'mean-reverter': 'Mean Reverter',
-    'scalp-master': 'Scalp Master',
+    'alpha-trader': 'AlphaTrader Pro',
+    'trend-rider': 'TrendRider AI',
+    'scalp-master': 'ScalpMaster X',
   };
 
   window.MockDataFinal = {
     getAllBots: () => ({
-      momentumAlpha: mockDataFinalBots['momentum-alpha'],
-      meanReverter: mockDataFinalBots['mean-reverter'],
+      alphaTrader: mockDataFinalBots['alpha-trader'],
+      trendRider: mockDataFinalBots['trend-rider'],
       scalpMaster: mockDataFinalBots['scalp-master'],
     }),
     botColors: {
-      momentumAlpha: botColors['momentum-alpha'],
-      meanReverter: botColors['mean-reverter'],
+      alphaTrader: botColors['alpha-trader'],
+      trendRider: botColors['trend-rider'],
       scalpMaster: botColors['scalp-master'],
     },
     botNames: {
-      momentumAlpha: botNames['momentum-alpha'],
-      meanReverter: botNames['mean-reverter'],
+      alphaTrader: botNames['alpha-trader'],
+      trendRider: botNames['trend-rider'],
       scalpMaster: botNames['scalp-master'],
     },
-    getMomentumAlpha: () => mockDataFinalBots['momentum-alpha'],
-    getMeanReverter: () => mockDataFinalBots['mean-reverter'],
+    getAlphaTrader: () => mockDataFinalBots['alpha-trader'],
+    getTrendRider: () => mockDataFinalBots['trend-rider'],
     getScalpMaster: () => mockDataFinalBots['scalp-master'],
   };
 
@@ -472,3 +512,37 @@ const MOCK_DATA = (() => {
     bots,
   };
 })();
+
+// ═══════════════════════════════════════════════════════════════════════════
+// PUBLIC API: getMockData(botId, timeframe)
+// ═══════════════════════════════════════════════════════════════════════════
+window.getMockData = function(botId, timeframe) {
+  const ids = MOCK_DATA.botIds;
+  const tfs = ['daily', 'weekly', 'monthly'];
+  if (!botId || !ids.includes(botId)) {
+    console.warn(`getMockData: unknown botId "${botId}". Available:`, ids);
+    botId = ids[0];
+  }
+  if (!timeframe || !tfs.includes(timeframe)) {
+    console.warn(`getMockData: unknown timeframe "${timeframe}". Available:`, tfs);
+    timeframe = 'daily';
+  }
+  const bot = MOCK_DATA.bots[botId];
+  const tf = bot[timeframe];
+  return {
+    ...tf,
+    bot,
+    botId,
+    timeframe,
+    data: tf,
+    kpis: tf,
+    // Convenience meta
+    botIds: ids,
+    timeframes: tfs,
+    allBotIds: ids,
+  };
+};
+// Static metadata accessors
+window.getMockData.botIds = MOCK_DATA.botIds;
+window.getMockData.timeframes = ['daily', 'weekly', 'monthly'];
+window.getMockData.allBotIds = MOCK_DATA.botIds;
