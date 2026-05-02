@@ -17,11 +17,12 @@
     const spark = dates.map(d => ({ l: d.slice(5), v: buckets[d] }));
     const maxS = Math.max(...spark.map(d => d.v), 1);
 
+    const sparkW = Math.min(_c.clientWidth - 40, 280);
     _c.innerHTML = `<div style="text-align:center;padding:20px;">
       <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);margin-bottom:8px;">Total Trades</div>
       <div class="tt-num" style="font-size:56px;font-weight:800;font-variant-numeric:tabular-nums;color:${accent};line-height:1;margin-bottom:4px;">0</div>
       <div style="font-size:13px;color:var(--text-muted);margin-bottom:16px;">${tf.wins} wins · ${tf.losses} losses · ${tf.winRate.toFixed(1)}% WR</div>
-      <canvas class="tt-spark" width="280" height="48" style="width:100%;max-width:280px;height:48px;"></canvas>
+      <canvas class="tt-spark" width="${sparkW}" height="48" style="width:100%;max-width:${sparkW}px;height:48px;"></canvas>
     </div>`;
 
     if (_raf) cancelAnimationFrame(_raf);
@@ -36,8 +37,8 @@
     const cv = _c.querySelector('.tt-spark');
     if (cv && spark.length > 1) {
       const ctx = cv.getContext('2d');
-      const dpr = devicePixelRatio || 1; cv.width = 280 * dpr; cv.height = 48 * dpr; ctx.scale(dpr, dpr);
-      const w = 280, h = 48, pad = 4, sx = (w - pad * 2) / (spark.length - 1);
+      const dpr = devicePixelRatio || 1; cv.width = sparkW * dpr; cv.height = 48 * dpr; ctx.scale(dpr, dpr);
+      const w = sparkW, h = 48, pad = 4, sx = (w - pad * 2) / (spark.length - 1);
       const g = ctx.createLinearGradient(0, 0, 0, h);
       g.addColorStop(0, cols.main + (dark ? '30' : '18'));
       g.addColorStop(1, cols.main + (dark ? '05' : '02'));

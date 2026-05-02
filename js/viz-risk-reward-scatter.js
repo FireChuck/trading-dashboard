@@ -13,7 +13,8 @@
     const cols = window.MockDataFinal?.botColors?.[botId] || { main: '#3B82F6' };
     const pc = T.profit;
     const lc = T.loss;
-    const w = 320, h = 240, pad = { t: 20, r: 20, b: 36, l: 48 };
+    const containerW = _c.clientWidth || 320;
+    const w = Math.min(containerW - 32, 400), h = Math.max(w * 0.75, 200), pad = { t: 20, r: 20, b: 36, l: 48 };
     const trades = tf.trades;
     const maxR = Math.max(...trades.map(t => Math.abs(t.r_multiple)), 1);
     const maxP = Math.max(...trades.map(t => Math.abs(t.pnl)), 1);

@@ -25,7 +25,7 @@
       const c = isW ? pc : lc;
       const isMax = (isW && i >= mWE - mW + 1 && i <= mWE) || (!isW && i >= mLE - mL + 1 && i <= mLE);
       const isCur = i >= recent.length - curLen;
-      return `<div style="width:14px;height:14px;border-radius:3px;background:${c};opacity:0;animation:sfi .3s ${i*25}ms ease-out forwards;${isMax ? 'border:2px solid ' + c + ';' : ''}cursor:pointer;flex-shrink:0;transition:transform .15s ease;" title="${t ? t.symbol + ' ' + t.direction + ' ' + fmt(t.pnl) + ' (' + t.date + ')' : ''}" onmouseenter="this.style.transform='scale(1.4)'" onmouseleave="this.style.transform='scale(1)'"></div>`;
+      return `<div style="width:16px;height:16px;border-radius:3px;background:${c};opacity:0;animation:sfi .3s ${i*25}ms ease-out forwards;${isMax ? 'border:2px solid ' + c + ';' : ''}cursor:pointer;flex-shrink:0;transition:transform .15s ease;min-width:16px;min-height:16px;" title="${t ? t.symbol + ' ' + t.direction + ' ' + fmt(t.pnl) + ' (' + t.date + ')' : ''}" onmouseenter="this.style.transform='scale(1.4)'" onmouseleave="this.style.transform='scale(1)'"></div>`;
     }).join('');
 
     _c.innerHTML = `<style>@keyframes sfi{from{opacity:0;transform:scale(.5)}to{opacity:1;transform:scale(1)}}</style>
@@ -46,7 +46,7 @@
         </div>
       </div>
       <div style="font-size:10px;color:var(--text-muted);text-align:center;margin-bottom:6px;">Last ${recent.length} trades · bordered = longest streak</div>
-      <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding:8px;background:var(--bg-secondary);border-radius:8px;">${blocks}</div>
+      <div style="display:flex;gap:4px;flex-wrap:wrap;justify-content:center;padding:8px;background:var(--bg-secondary);border-radius:8px;overflow:hidden;">${blocks}</div>
     </div>`;
   }
 

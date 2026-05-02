@@ -291,35 +291,6 @@ body {
   gap: var(--space-4);
 }
 
-/* ── Card / Panel ── */
-.card {
-  background: var(--bg-surface);
-  border: 1px solid var(--border-color);
-  border-radius: var(--radius);
-  overflow: hidden;
-  transition: background var(--transition-normal), border-color var(--transition-normal);
-}
-
-.card-header {
-  padding: var(--space-3) var(--space-4);
-  border-bottom: 1px solid var(--border-light);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-
-.card-title {
-  font-size: var(--text-sm);
-  font-weight: 500;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.card-body {
-  padding: var(--space-4);
-}
-
 /* ── KPI Cards (A1) ── */
 .kpi-grid {
   display: grid;
@@ -362,17 +333,6 @@ body {
 .kpi-trend.up { color: var(--profit); }
 .kpi-trend.down { color: var(--loss); }
 .kpi-trend.flat { color: var(--neutral); }
-
-/* ── Chart Containers ── */
-.chart-container {
-  position: relative;
-  width: 100%;
-  min-height: 240px;
-}
-
-.chart-container canvas {
-  width: 100% !important;
-}
 
 /* ── Heatmap (A3) ── */
 .heatmap-wrapper {
@@ -518,67 +478,36 @@ body {
   font-weight: 500;
 }
 
-/* ── Responsive ── */
-@media (max-width: 1023px) {
-  .dashboard-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
+/* ── Typography System ── */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-sans);
+  font-weight: 600;
+  line-height: 1.3;
+  color: var(--text-primary);
+  letter-spacing: -0.01em;
 }
 
-@media (max-width: 767px) {
-  .header-inner {
-    flex-wrap: wrap;
-    height: auto;
-    padding: var(--space-3) var(--space-4);
-    gap: var(--space-2);
-  }
+/* ── Spacing Scale ── */
+/* All spacing follows: 4 / 8 / 12 / 16 / 20 / 24 / 32 / 48px */
+/* Enforced via CSS variables --space-1 through --space-8 */
 
-  .header-left {
-    width: 100%;
-    order: 1;
-  }
-
-  .header-right {
-    width: 100%;
-    order: 2;
-    justify-content: space-between;
-  }
-
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-  }
-
-  .kpi-grid {
-    grid-template-columns: repeat(2, 1fr);
-  }
-
-  .main {
-    padding: var(--space-4);
-  }
-
-  .bot-tab, .tf-btn {
-    padding: 6px 10px;
-    font-size: var(--text-xs);
-  }
-
-  .chart-container {
-    min-height: 200px;
-  }
+/* ── Visual Consistency Tokens ── */
+.card {
+  background: var(--bg-surface);
+  /* Ensure consistent shadow and border across all cards */
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  transition: background var(--transition-normal), border-color var(--transition-normal), box-shadow var(--transition-fast);
 }
 
-/* ── Animations ── */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(8px); }
-  to { opacity: 1; transform: translateY(0); }
+.card:hover {
+  border-color: var(--border-primary);
 }
 
+/* Staggered fade-in for dashboard cards */
 .card {
   animation: fadeIn var(--transition-normal) both;
 }
-
 .card:nth-child(1) { animation-delay: 0ms; }
 .card:nth-child(2) { animation-delay: 30ms; }
 .card:nth-child(3) { animation-delay: 60ms; }
@@ -599,6 +528,291 @@ body {
 .card:nth-child(18) { animation-delay: 510ms; }
 .card:nth-child(19) { animation-delay: 540ms; }
 .card:nth-child(20) { animation-delay: 570ms; }
+
+.card-header {
+  padding: var(--space-3) var(--space-4);
+  border-bottom: 1px solid var(--border-light);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 40px;
+}
+
+.card-title {
+  font-size: var(--text-xs);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  font-family: var(--font-sans);
+}
+
+.card-body {
+  padding: var(--space-4);
+}
+
+/* ── Chart Container Consistency ── */
+.chart-container {
+  position: relative;
+  width: 100%;
+  min-height: 240px;
+  overflow: hidden;
+}
+
+.chart-container canvas {
+  width: 100% !important;
+  height: auto !important;
+}
+
+/* ── Touch Targets (Global) ── */
+button, [role="button"], .bot-tab, .tf-btn, .theme-toggle, .logo-btn {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+@media (pointer: fine) {
+  /* Reset min-height on pointer devices for compact UI */
+  .bot-tab, .tf-btn {
+    min-height: unset;
+    min-width: unset;
+  }
+}
+
+/* ── Scrollbar Consistency ── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--scrollbar-track);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--scrollbar-thumb);
+  border-radius: 3px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--border-primary);
+}
+
+/* ── Focus Styles (Accessibility) ── */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+/* ── Text Selection ── */
+::selection {
+  background: var(--accent-bg);
+  color: var(--text-primary);
+}
+
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE SYSTEM — 3 Breakpoints: Desktop / Tablet / Mobile
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Tablet (≤1023px) ── */
+@media (max-width: 1023px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-3);
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .main {
+    padding: var(--space-5);
+  }
+
+  .card-body {
+    padding: var(--space-3);
+  }
+
+  .chart-container {
+    min-height: 220px;
+  }
+
+  /* Landing page 2-col on tablet */
+  .landing-container {
+    max-width: 100%;
+    padding: 0 var(--space-4);
+  }
+
+  .landing-bots {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* ── Mobile (≤767px) ── */
+@media (max-width: 767px) {
+  :root {
+    --header-height: auto;
+  }
+
+  .header-inner {
+    flex-wrap: wrap;
+    height: auto;
+    padding: var(--space-3) var(--space-4);
+    gap: var(--space-2);
+  }
+
+  .header-left {
+    width: 100%;
+    order: 1;
+  }
+
+  .header-right {
+    width: 100%;
+    order: 2;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+  }
+
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .kpi-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: var(--space-2);
+  }
+
+  .main {
+    padding: var(--space-4);
+  }
+
+  .bot-info {
+    margin-bottom: var(--space-4);
+  }
+
+  .bot-info-name {
+    font-size: var(--text-lg);
+  }
+
+  .card-body {
+    padding: var(--space-3);
+  }
+
+  /* Touch-friendly targets (44px min) */
+  .bot-tab,
+  .tf-btn {
+    padding: 10px 14px;
+    font-size: var(--text-sm);
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .theme-toggle {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .logo-btn {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
+
+  .chart-container {
+    min-height: 200px;
+  }
+
+  /* Session bars mobile */
+  .session-bar-label {
+    width: 56px;
+    font-size: var(--text-xs);
+  }
+
+  .session-bar-track {
+    height: 32px;
+  }
+
+  /* Heatmap mobile scroll */
+  .heatmap-wrapper {
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: thin;
+  }
+
+  /* Landing mobile */
+  .landing-container {
+    padding: 0 var(--space-3);
+  }
+
+  .landing-hero {
+    padding: var(--space-6) 0 var(--space-4);
+  }
+
+  .landing-hero h1 {
+    font-size: var(--text-xl);
+  }
+
+  .landing-bots {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+  }
+
+  .landing-bot-card {
+    padding: var(--space-4);
+  }
+}
+
+/* ── Small Mobile (≤375px) ── */
+@media (max-width: 375px) {
+  .main {
+    padding: var(--space-3);
+  }
+
+  .header-inner {
+    padding: var(--space-2) var(--space-3);
+  }
+
+  .kpi-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-2);
+  }
+
+  .kpi-value {
+    font-size: var(--text-base);
+  }
+
+  .dashboard-grid {
+    gap: var(--space-2);
+  }
+
+  .card-body {
+    padding: var(--space-2);
+  }
+
+  .bot-switcher,
+  .timeframe-selector {
+    width: 100%;
+  }
+
+  .bot-tab,
+  .tf-btn {
+    flex: 1;
+    font-size: var(--text-xs);
+    padding: 8px 6px;
+    min-height: 40px;
+  }
+}
+
+/* ── Animations ── */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
 
 /* ── Logo Button ── */
 .logo-btn {
@@ -706,12 +920,6 @@ body {
   font-size: var(--text-base);
   font-weight: 600;
   color: var(--text-primary);
-}
-
-@media (max-width: 767px) {
-  .landing-bots {
-    grid-template-columns: 1fr;
-  }
 }
 
 /* ── Utility ── */

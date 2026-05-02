@@ -17,9 +17,9 @@
       const isBest = type === 'best';
       const color = isBest ? pc : lc;
       const bgVar = isBest ? 'var(--profit-bg)' : 'var(--loss-bg)';
-      return `<div style="background:${bgVar};border-radius:12px;padding:16px;overflow:hidden;">
+      return `<div style="background:${bgVar};border-radius:12px;padding:16px;overflow:hidden;min-width:0;">
         <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:${color};margin-bottom:8px;">${isBest ? 'Best' : 'Worst'} Trade</div>
-        <canvas class="bwc-${type}" width="200" height="70" style="width:100%;height:70px;"></canvas>
+        <canvas class="bwc-${type}" width="200" height="70" style="width:100%;height:70px;max-width:100%;"></canvas>
         <div style="font-size:24px;font-weight:800;color:${color};margin-top:8px;font-variant-numeric:tabular-nums;">${fmt(trade.pnl)}</div>
         <div style="font-size:11px;color:var(--text-muted);margin-top:4px;">${trade.symbol} · ${trade.direction} · ${trade.date}</div>
         <div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">${trade.entry.toFixed(2)} → ${trade.exit.toFixed(2)}</div>
@@ -27,7 +27,7 @@
     };
     _c.innerHTML = `<div style="padding:20px;">
       <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);text-align:center;margin-bottom:16px;">Best & Worst Trade</div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">${mkCard(tf.bestTrade, 'best')}${mkCard(tf.worstTrade, 'worst')}</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">${mkCard(tf.bestTrade, 'best')}${mkCard(tf.worstTrade, 'worst')}</div>
     </div>`;
     drawCurve('.bwc-best', tf.bestTrade, pc, dark, T);
     drawCurve('.bwc-worst', tf.worstTrade, lc, dark, T);

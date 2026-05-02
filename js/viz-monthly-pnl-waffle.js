@@ -39,7 +39,7 @@
         <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);">Monthly P&L</div>
         <div style="font-size:18px;font-weight:800;color:${total >= 0 ? pc : lc};font-variant-numeric:tabular-nums;">${fmt(total)}</div>
       </div>
-      <div style="display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--bg-secondary);border-radius:10px;">${rows}</div>
+      <div style="display:flex;flex-direction:column;gap:6px;padding:12px;background:var(--bg-secondary);border-radius:10px;overflow-x:auto;-webkit-overflow-scrolling:touch;">${rows}</div>
       <div style="display:flex;justify-content:center;gap:8px;margin-top:8px;font-size:10px;color:var(--text-muted);">
         <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:${pc};"></span> Profit</span>
         <span style="display:inline-flex;align-items:center;gap:4px;"><span style="width:10px;height:10px;border-radius:2px;background:${lc};"></span> Loss</span>
