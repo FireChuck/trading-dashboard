@@ -1,1087 +1,201 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Trading Dashboard</title>
-  <style>
-    /* ═══════════════════════════════════════════════
-       THEME SYSTEM — CSS Custom Properties
-       Light mode is default. Dark mode via [data-theme="dark"].
-       DESIGN.md rule: cool gray variant, no blue/purple tint.
-       Impeccable rule: never pure black, tinted neutrals, reduced saturation in dark.
-    ═══════════════════════════════════════════════ */
-
-    :root {
-      /* Light Mode (Default) — warm stone neutrals per DESIGN.md */
-      --bg-primary: #FAFAF9;
-      --bg-secondary: #F5F5F4;
-      --bg-tertiary: #EFEFED;
-
-      --text-primary: #1C1917;
-      --text-secondary: #78716C;
-      --text-muted: #A8A29E;
-
-      --border-primary: #E7E5E4;
-      --border-subtle: #F0EEEC;
-
-      --accent: #2563EB;
-      --accent-soft: #EFF6FF;
-
-      --profit: #16A34A;
-      --loss: #DC2626;
-      --flat: #78716C;
-      --warning: #D97706;
-
-      --profit-bg: #F0FDF4;
-      --loss-bg: #FEF2F2;
-      --warning-bg: #FFFBEB;
-
-      --profit-text: #15803D;
-      --loss-text: #B91C1C;
-      --warning-text: #92400E;
-
-      --card-bg: #FAFAF9;
-      --card-hover-bg: #F5F5F4;
-      --card-elevated-bg: #FFFFFF;
-
-      --badge-warn-bg: #FEF3C7;
-      --badge-warn-text: #92400E;
-      --badge-crit-bg: #FEE2E2;
-      --badge-crit-text: #991B1B;
-
-      --tooltip-bg: #1C1917;
-      --tooltip-text: #FAFAF9;
-
-      --hover-chip-border: #A8A29E;
-
-      --shadow-sm: 0 1px 2px rgba(28, 25, 23, 0.05);
-      --shadow-md: 0 4px 8px rgba(28, 25, 23, 0.08);
-      --shadow-focus: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent);
-
-      --font-body-weight: 400;
-      --font-label-weight: 500;
-      --font-value-weight: 700;
-
-      --mono: 'SF Mono', 'Cascadia Code', 'Fira Code', monospace;
-      --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-
-      /* Transition for theme switching */
-      --theme-transition: background-color 200ms ease, color 200ms ease, border-color 200ms ease, box-shadow 200ms ease;
-    }
-
-    [data-theme="dark"] {
-      /* Dark Mode — cool gray variant per DESIGN.md
-         Impeccable: never pure black (oklch 12-18%), tinted neutrals, desaturated accents,
-         lighter surfaces for depth instead of shadows, reduce font weight for dark-on-light readability. */
-
-      --bg-primary: #111214;
-      --bg-secondary: #1A1B1E;
-      --bg-tertiary: #222326;
-
-      --text-primary: #E8E8EC;
-      --text-secondary: #9B9BA1;
-      --text-muted: #A0A0A6;
-
-      --border-primary: #2A2B2E;
-      --border-subtle: #222326;
-
-      --accent: #5B8DEF;
-      --accent-soft: #1C2A42;
-
-      /* Desaturated semantic colors for dark mode */
-      --profit: #4ADE80;
-      --loss: #F87171;
-      --flat: #9B9BA1;
-      --warning: #FBBF24;
-
-      --profit-bg: #0D2818;
-      --loss-bg: #2D1215;
-      --warning-bg: #2D2006;
-
-      --profit-text: #4ADE80;
-      --loss-text: #F87171;
-      --warning-text: #FBBF24;
-
-      --card-bg: #161719;
-      --card-hover-bg: #1E1F22;
-      --card-elevated-bg: #1A1B1E;
-
-      --badge-warn-bg: #2D2006;
-      --badge-warn-text: #FBBF24;
-      --badge-crit-bg: #2D1215;
-      --badge-crit-text: #F87171;
-
-      --tooltip-bg: #E8E8EC;
-      --tooltip-text: #111214;
-
-      --hover-chip-border: #4A4B4E;
-
-      --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.2);
-      --shadow-md: 0 4px 8px rgba(0, 0, 0, 0.3);
-      --shadow-focus: 0 0 0 2px var(--bg-primary), 0 0 0 4px var(--accent);
-
-      --font-body-weight: 350;
-      --font-label-weight: 450;
-      --font-value-weight: 650;
-    }
-
-    /* ═══════════════════════════════════════════════
-       BASE RESET & GLOBALS
-    ═══════════════════════════════════════════════ */
-
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-
-    body {
-      font-family: var(--sans);
-      font-weight: var(--font-body-weight);
-      background: var(--bg-primary);
-      color: var(--text-primary);
-      font-size: 15px;
-      line-height: 1.5;
-      -webkit-font-smoothing: antialiased;
-      transition: var(--theme-transition);
-    }
-
-    .container {
-      max-width: 1440px;
-      margin: 0 auto;
-      padding: 24px;
-    }
-
-    /* ═══════════════════════════════════════════════
-       HEADER
-    ═══════════════════════════════════════════════ */
-
-    .header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding-bottom: 20px;
-      border-bottom: 1px solid var(--border-primary);
-      margin-bottom: 20px;
-    }
-
-    .header h1 {
-      font-size: 22px;
-      font-weight: 600;
-      letter-spacing: -0.02em;
-    }
-
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 16px;
-    }
-
-    /* Theme Toggle */
-    .theme-toggle {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      background: none;
-      border: 1px solid var(--border-primary);
-      border-radius: 8px;
-      padding: 6px 12px;
-      cursor: pointer;
-      color: var(--text-secondary);
-      font-family: var(--sans);
-      font-size: 13px;
-      font-weight: var(--font-label-weight);
-      transition: var(--theme-transition);
-      outline: none;
-      min-height: 32px;
-    }
-
-    .theme-toggle:hover {
-      border-color: var(--hover-chip-border);
-      color: var(--text-primary);
-    }
-
-    .theme-toggle:focus-visible {
-      box-shadow: var(--shadow-focus);
-    }
-
-    .theme-toggle .icon {
-      width: 18px;
-      height: 18px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .theme-toggle .icon svg {
-      width: 18px;
-      height: 18px;
-      fill: currentColor;
-      transition: transform 200ms ease;
-    }
-
-    /* Hide/show sun/moon based on theme */
-    [data-theme="dark"] .icon-sun { display: none; }
-    [data-theme="light"] .icon-moon { display: none; }
-    [data-theme="dark"] .icon-moon { display: flex; }
-    :root:not([data-theme]) .icon-moon { display: none; }
-    :root:not([data-theme]) .icon-sun { display: flex; }
-    [data-theme="light"] .icon-sun { display: flex; }
-
-    /* Prop Toggle */
-    .prop-toggle {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      font-size: 13px;
-      color: var(--text-secondary);
-    }
-
-    .prop-toggle .toggle-label {
-      font-weight: var(--font-label-weight);
-      transition: color 150ms ease;
-    }
-
-    .prop-toggle .toggle-label.active {
-      color: var(--accent);
-    }
-
-    .prop-toggle button {
-      position: relative;
-      width: 36px;
-      height: 20px;
-      border-radius: 10px;
-      border: 1px solid var(--border-primary);
-      background: var(--bg-secondary);
-      cursor: pointer;
-      transition: background 150ms ease, border-color 150ms ease;
-      outline: none;
-    }
-
-    .prop-toggle button:focus-visible {
-      box-shadow: var(--shadow-focus);
-    }
-
-    .prop-toggle button.active {
-      background: var(--accent);
-      border-color: var(--accent);
-    }
-
-    .prop-toggle button::after {
-      content: '';
-      position: absolute;
-      top: 2px;
-      left: 2px;
-      width: 14px;
-      height: 14px;
-      border-radius: 50%;
-      background: white;
-      transition: transform 150ms ease;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.15);
-    }
-
-    .prop-toggle button.active::after {
-      transform: translateX(16px);
-    }
-
-    /* ═══════════════════════════════════════════════
-       KPI BAR
-    ═══════════════════════════════════════════════ */
-
-    .kpi-bar {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-
-    .kpi-card {
-      padding: 16px;
-      border: 1px solid var(--border-primary);
-      background: var(--card-bg);
-      position: relative;
-      transition: var(--theme-transition);
-    }
-
-    .kpi-card:hover {
-      background: var(--card-hover-bg);
-    }
-
-    .kpi-card.primary {
-      border-left: 3px solid var(--text-primary);
-    }
-
-    .kpi-card.warning {
-      border-color: var(--warning);
-      background: var(--warning-bg);
-    }
-
-    .kpi-card.critical {
-      border-color: var(--loss);
-      background: var(--loss-bg);
-    }
-
-    .kpi-label {
-      font-size: 11px;
-      font-weight: var(--font-label-weight);
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      margin-bottom: 6px;
-    }
-
-    .kpi-value {
-      font-family: var(--mono);
-      font-size: 18px;
-      font-weight: var(--font-value-weight);
-      letter-spacing: -0.02em;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .kpi-card.primary .kpi-value {
-      font-size: 28px;
-    }
-
-    .kpi-value.profit { color: var(--profit); }
-    .kpi-value.loss { color: var(--loss); }
-
-    .kpi-sub {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 4px;
-    }
-
-    .kpi-sub .badge {
-      display: inline-block;
-      font-size: 10px;
-      font-weight: 600;
-      padding: 1px 6px;
-      border-radius: 3px;
-      margin-left: 4px;
-    }
-
-    .kpi-sub .badge.warn {
-      background: var(--badge-warn-bg);
-      color: var(--badge-warn-text);
-    }
-
-    .kpi-sub .badge.crit {
-      background: var(--badge-crit-bg);
-      color: var(--badge-crit-text);
-    }
-
-    /* Tooltips */
-    .kpi-card[data-tip]::before {
-      content: attr(data-tip);
-      position: absolute;
-      bottom: calc(100% + 8px);
-      left: 50%;
-      transform: translateX(-50%);
-      background: var(--tooltip-bg);
-      color: var(--tooltip-text);
-      font-size: 12px;
-      font-weight: 400;
-      line-height: 1.4;
-      padding: 6px 10px;
-      border-radius: 6px;
-      white-space: nowrap;
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 150ms ease;
-      z-index: 10;
-    }
-
-    .kpi-card[data-tip]::after {
-      content: '';
-      position: absolute;
-      bottom: calc(100% + 4px);
-      left: 50%;
-      transform: translateX(-50%);
-      border: 4px solid transparent;
-      border-top-color: var(--tooltip-bg);
-      pointer-events: none;
-      opacity: 0;
-      transition: opacity 150ms ease;
-      z-index: 10;
-    }
-
-    .kpi-card[data-tip]:hover::before,
-    .kpi-card[data-tip]:hover::after {
-      opacity: 1;
-    }
-
-    /* ═══════════════════════════════════════════════
-       SESSION FILTER
-    ═══════════════════════════════════════════════ */
-
-    .filter-bar {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      margin-bottom: 16px;
-    }
-
-    .filter-bar .label {
-      font-size: 13px;
-      font-weight: var(--font-label-weight);
-      color: var(--text-secondary);
-      margin-right: 8px;
-    }
-
-    .filter-chip {
-      font-family: var(--sans);
-      font-size: 13px;
-      font-weight: var(--font-label-weight);
-      padding: 6px 16px;
-      border-radius: 6px;
-      border: 1px solid var(--border-primary);
-      background: var(--bg-primary);
-      color: var(--text-secondary);
-      cursor: pointer;
-      transition: all 150ms ease-out;
-      outline: none;
-    }
-
-    .filter-chip:focus-visible {
-      box-shadow: var(--shadow-focus);
-    }
-
-    .filter-chip:hover {
-      border-color: var(--hover-chip-border);
-      color: var(--text-primary);
-    }
-
-    .filter-chip.active {
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      border-color: var(--text-primary);
-      font-weight: 600;
-    }
-
-    .filter-bar .spacer { flex: 1; }
-
-    /* Prop Banner */
-    .prop-banner {
-      display: none;
-      font-size: 13px;
-      padding: 8px 14px;
-      border-radius: 6px;
-      margin-bottom: 12px;
-      font-weight: var(--font-label-weight);
-    }
-
-    .prop-banner.warn {
-      display: block;
-      background: var(--warning-bg);
-      border: 1px solid var(--warning);
-      color: var(--warning-text);
-    }
-
-    .prop-banner.crit {
-      display: block;
-      background: var(--loss-bg);
-      border: 1px solid var(--loss);
-      color: var(--loss-text);
-    }
-
-    /* ═══════════════════════════════════════════════
-       TABLE
-    ═══════════════════════════════════════════════ */
-
-    .table-wrap {
-      border: 1px solid var(--border-primary);
-      overflow: hidden;
-      transition: border-color 200ms ease;
-    }
-
-    .table-scroll {
-      max-height: 520px;
-      overflow-y: auto;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      font-size: 13px;
-    }
-
-    thead {
-      position: sticky;
-      top: 0;
-      z-index: 1;
-    }
-
-    th {
-      background: var(--bg-secondary);
-      font-weight: 600;
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
-      color: var(--text-secondary);
-      text-align: left;
-      padding: 10px 12px;
-      border-bottom: 1px solid var(--border-primary);
-      cursor: pointer;
-      user-select: none;
-      white-space: nowrap;
-      box-shadow: 0 1px 0 var(--border-primary);
-      transition: color 150ms ease, background-color 200ms ease, border-color 200ms ease;
-    }
-
-    th.num { text-align: right; }
-
-    th:hover { color: var(--text-primary); }
-
-    th:focus-visible {
-      box-shadow: var(--shadow-focus);
-      position: relative;
-    }
-
-    th .sort-arrow {
-      margin-left: 4px;
-      font-size: 10px;
-      opacity: 0.3;
-      transition: opacity 150ms ease;
-    }
-
-    th.sorted .sort-arrow {
-      opacity: 1;
-      color: var(--text-primary);
-    }
-
-    td {
-      padding: 8px 12px;
-      border-bottom: 1px solid var(--border-primary);
-      white-space: nowrap;
-    }
-
-    tr:last-child td { border-bottom: none; }
-
-    tbody tr {
-      transition: background 150ms ease;
-    }
-
-    tbody tr:hover {
-      background: var(--bg-secondary);
-    }
-
-    tbody tr.prop-violation {
-      background: var(--loss-bg);
-    }
-
-    tbody tr.prop-violation:hover {
-      background: var(--loss);
-    }
-
-    [data-theme="dark"] tbody tr.prop-violation:hover {
-      background: #3D1418;
-    }
-
-    .cell-mono {
-      font-family: var(--mono);
-      font-weight: var(--font-label-weight);
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-
-    .cell-direction {
-      font-weight: var(--font-label-weight);
-      font-size: 12px;
-    }
-
-    .cell-direction.long { color: var(--profit); }
-    .cell-direction.short { color: var(--loss); }
-
-    .cell-pnl {
-      font-family: var(--mono);
-      font-weight: var(--font-label-weight);
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-    .cell-pnl.positive { color: var(--profit); }
-    .cell-pnl.negative { color: var(--loss); }
-
-    .cell-points {
-      font-family: var(--mono);
-      font-weight: var(--font-label-weight);
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-    .cell-points.positive { color: var(--profit); }
-    .cell-points.negative { color: var(--loss); }
-
-    .cell-session {
-      font-size: 12px;
-      font-weight: var(--font-label-weight);
-      padding: 2px 8px;
-      border-radius: 4px;
-      background: var(--bg-secondary);
-      transition: background-color 200ms ease;
-    }
-
-    .cell-date {
-      color: var(--text-secondary);
-      font-size: 12px;
-    }
-
-    .cell-r {
-      font-family: var(--mono);
-      font-weight: var(--font-label-weight);
-      text-align: right;
-      font-variant-numeric: tabular-nums;
-    }
-    .cell-r.positive { color: var(--profit); }
-    .cell-r.negative { color: var(--loss); }
-
-    /* ═══════════════════════════════════════════════
-       EMPTY STATE
-    ═══════════════════════════════════════════════ */
-
-    .empty-state {
-      text-align: center;
-      padding: 60px 20px;
-      color: var(--text-secondary);
-      font-size: 14px;
-    }
-
-    .empty-state .empty-text {
-      font-weight: var(--font-label-weight);
-      color: var(--text-primary);
-      margin-bottom: 4px;
-    }
-
-    .empty-state .empty-hint {
-      font-size: 13px;
-      opacity: 0.7;
-    }
-
-    .empty-state .empty-action {
-      margin-top: 12px;
-      font-size: 13px;
-      color: var(--accent);
-      cursor: pointer;
-      font-weight: var(--font-label-weight);
-    }
-
-    .empty-state .empty-action:hover {
-      text-decoration: underline;
-    }
-
-    /* ═══════════════════════════════════════════════
-       RESPONSIVE
-    ═══════════════════════════════════════════════ */
-
-    @media (max-width: 900px) {
-      .kpi-bar {
-        grid-template-columns: repeat(3, 1fr);
-      }
-      .kpi-card[data-tip]::before,
-      .kpi-card[data-tip]::after {
-        display: none;
-      }
-    }
-
-    @media (max-width: 600px) {
-      .container { padding: 16px; }
-      .kpi-bar {
-        grid-template-columns: repeat(2, 1fr);
-      }
-      .kpi-value { font-size: 20px; }
-      .header { flex-direction: column; align-items: flex-start; gap: 12px; }
-      .header-controls { width: 100%; justify-content: flex-end; }
-      .table-scroll { max-height: 400px; }
-      .filter-bar { flex-wrap: wrap; }
-    }
-
-    /* ═══════════════════════════════════════════════
-       SCROLLBAR (dark mode polish)
-    ═══════════════════════════════════════════════ */
-
-    [data-theme="dark"] .table-scroll::-webkit-scrollbar {
-      width: 8px;
-    }
-    [data-theme="dark"] .table-scroll::-webkit-scrollbar-track {
-      background: var(--bg-primary);
-    }
-    [data-theme="dark"] .table-scroll::-webkit-scrollbar-thumb {
-      background: var(--border-primary);
-      border-radius: 4px;
-    }
-    [data-theme="dark"] .table-scroll::-webkit-scrollbar-thumb:hover {
-      background: var(--text-muted);
-    }
-  </style>
+  <title>Multi-Bot Trading Analytics</title>
+  <link rel="stylesheet" href="css/styles.css">
+  <!-- CDN Libraries -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
-  <div class="container">
-    <header class="header">
-      <h1>Trading Dashboard</h1>
-      <div class="header-controls">
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <div class="header-left">
+        <button class="logo-btn" id="logoBtn" title="Dashboard Home">📊</button>
+        <div class="bot-switcher" id="botSwitcher"></div>
+      </div>
+      <div class="header-right">
+        <div class="timeframe-selector" id="timeframeSelector">
+          <button class="tf-btn active" data-tf="daily">Daily</button>
+          <button class="tf-btn" data-tf="weekly">Weekly</button>
+          <button class="tf-btn" data-tf="monthly">Monthly</button>
+        </div>
         <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
-          <span class="icon icon-sun">
-            <svg viewBox="0 0 20 20"><path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z"/></svg>
-          </span>
-          <span class="icon icon-moon" style="display:none;">
-            <svg viewBox="0 0 20 20"><path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"/></svg>
-          </span>
+          <span id="themeIcon">☀️</span>
         </button>
-        <div class="prop-toggle">
-          <span class="toggle-label" id="toggleLabel">Prop Firm Mode</span>
-          <button id="propToggle" role="switch" aria-checked="false" aria-label="Toggle prop firm mode"></button>
-          <span class="toggle-label" id="toggleStatus" style="min-width:24px; font-variant-numeric: tabular-nums;">Off</span>
-        </div>
-      </div>
-    </header>
-
-    <div id="kpiBar" class="kpi-bar"></div>
-
-    <div id="propBanner" class="prop-banner"></div>
-
-    <div class="filter-bar">
-      <span class="label">Session</span>
-      <button class="filter-chip active" data-filter="all">All Sessions</button>
-      <button class="filter-chip" data-filter="London">London</button>
-      <button class="filter-chip" data-filter="New York">New York</button>
-    </div>
-
-    <div class="table-wrap">
-      <div class="table-scroll">
-        <table>
-          <thead>
-            <tr>
-              <th tabindex="0" data-sort="date">Date <span class="sort-arrow">↕</span></th>
-              <th tabindex="0" data-sort="time">Time <span class="sort-arrow">↕</span></th>
-              <th tabindex="0" data-sort="session">Session <span class="sort-arrow">↕</span></th>
-              <th tabindex="0" data-sort="symbol">Symbol <span class="sort-arrow">↕</span></th>
-              <th tabindex="0" data-sort="direction">Dir <span class="sort-arrow">↕</span></th>
-              <th class="num" tabindex="0" data-sort="entry">Entry <span class="sort-arrow">↕</span></th>
-              <th class="num" tabindex="0" data-sort="exit">Exit <span class="sort-arrow">↕</span></th>
-              <th class="num" tabindex="0" data-sort="points">Points <span class="sort-arrow">↕</span></th>
-              <th class="num" tabindex="0" data-sort="r_multiple">R <span class="sort-arrow">↕</span></th>
-              <th class="num" tabindex="0" data-sort="pnl">PnL <span class="sort-arrow">↕</span></th>
-            </tr>
-          </thead>
-          <tbody id="tradeBody"></tbody>
-        </table>
-        <div id="emptyState" class="empty-state" style="display:none;">
-          <div class="empty-text">No trades found</div>
-          <div class="empty-hint" id="emptyHint">Try selecting a different session filter.</div>
-          <div class="empty-action" id="emptyAction" onclick="resetFilter()">Show all sessions</div>
-        </div>
       </div>
     </div>
-  </div>
+  </header>
 
-  <script>
-    /* ═══════════════════════════════════════════════
-       THEME SYSTEM
-       Priority: localStorage > system preference > light default
-    ═══════════════════════════════════════════════ */
-    function getSystemTheme() {
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
+  <!-- Landing Page -->
+  <main class="main" id="landingPage" style="display:none;">
+    <div class="landing-container" id="landingContainer"></div>
+  </main>
 
-    function applyTheme(theme) {
-      document.documentElement.setAttribute('data-theme', theme);
-      localStorage.setItem('dashboard-theme', theme);
-      // Update toggle icon visibility
-      const sunIcon = document.querySelector('.icon-sun');
-      const moonIcon = document.querySelector('.icon-moon');
-      if (theme === 'dark') {
-        sunIcon.style.display = 'none';
-        moonIcon.style.display = 'flex';
-      } else {
-        sunIcon.style.display = 'flex';
-        moonIcon.style.display = 'none';
-      }
-    }
+  <!-- Dashboard -->
+  <main class="main" id="dashboardMain">
+    <!-- Bot Info -->
+    <div class="bot-info">
+      <div class="bot-info-name" id="botName">—</div>
+      <div class="bot-info-tagline" id="botTagline">—</div>
+    </div>
 
-    // Initialize theme
-    (function() {
-      const saved = localStorage.getItem('dashboard-theme');
-      if (saved && (saved === 'dark' || saved === 'light')) {
-        applyTheme(saved);
-      } else {
-        applyTheme(getSystemTheme());
-      }
-    })();
+    <!-- Dashboard Grid — 20 Viz Cards -->
+    <div class="dashboard-grid" id="dashboardGrid">
 
-    // Listen for system theme changes
-    window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
-      if (!localStorage.getItem('dashboard-theme')) {
-        applyTheme(e.matches ? 'dark' : 'light');
-      }
-    });
+      <!-- A1: KPI Overview -->
+      <div class="card" id="card-kpi">
+        <div class="card-header"><span class="card-title">Key Metrics</span></div>
+        <div class="card-body"><div class="kpi-grid" id="kpiGrid"></div></div>
+      </div>
 
-    // Theme toggle button
-    document.getElementById('themeToggle').addEventListener('click', function() {
-      const current = document.documentElement.getAttribute('data-theme') || getSystemTheme();
-      applyTheme(current === 'dark' ? 'light' : 'dark');
-    });
+      <!-- A2: Equity Curve -->
+      <div class="card" id="card-equity">
+        <div class="card-header"><span class="card-title">Equity Curve</span></div>
+        <div class="card-body"><div class="chart-container"><canvas id="equityChart"></canvas></div></div>
+      </div>
 
-    /* ═══════════════════════════════════════════════
-       TRADE DATA & STATE
-    ═══════════════════════════════════════════════ */
+      <!-- A3: Trade Heatmap -->
+      <div class="card" id="card-heatmap">
+        <div class="card-header"><span class="card-title">Trade Heatmap</span></div>
+        <div class="card-body"><div class="heatmap-wrapper" id="heatmapContainer"></div></div>
+      </div>
 
-    const trades = [];
+      <!-- A4: P&L by Pair -->
+      <div class="card" id="card-pnl-pair">
+        <div class="card-header"><span class="card-title">P&L by Pair</span></div>
+        <div class="card-body"><div class="chart-container"><canvas id="pnlPairChart"></canvas></div></div>
+      </div>
 
-    let state = {
-      filter: 'all',
-      sortKey: 'date',
-      sortDir: 'desc',
-      propMode: false
-    };
+      <!-- A5: Risk Radar -->
+      <div class="card" id="card-risk">
+        <div class="card-header"><span class="card-title">Risk Profile</span></div>
+        <div class="card-body"><div class="chart-container"><canvas id="riskRadarChart"></canvas></div></div>
+      </div>
 
-    function getFiltered() {
-      let t = [...trades];
-      if (state.filter !== 'all') t = t.filter(x => x.session === state.filter);
-      const dir = state.sortDir === 'asc' ? 1 : -1;
-      t.sort((a, b) => {
-        let va = a[state.sortKey], vb = b[state.sortKey];
-        if (typeof va === 'string') return va.localeCompare(vb) * dir;
-        return (va - vb) * dir;
-      });
-      return t;
-    }
+      <!-- A6: Trade Distribution -->
+      <div class="card" id="card-distribution">
+        <div class="card-header"><span class="card-title">R:R Distribution</span></div>
+        <div class="card-body"><div class="chart-container"><canvas id="distributionChart"></canvas></div></div>
+      </div>
 
-    function calcKPIs(filtered) {
-      const wins = filtered.filter(t => t.pnl > 0);
-      const losses = filtered.filter(t => t.pnl < 0);
-      const totalPnl = filtered.reduce((s, t) => s + t.pnl, 0);
-      const winRate = filtered.length ? (wins.length / filtered.length * 100) : 0;
-      const grossProfit = wins.reduce((s, t) => s + t.pnl, 0);
-      const grossLoss = Math.abs(losses.reduce((s, t) => s + t.pnl, 0));
-      const profitFactor = grossLoss ? (grossProfit / grossLoss) : grossProfit ? Infinity : 0;
+      <!-- A7: Session Analytics -->
+      <div class="card" id="card-session">
+        <div class="card-header"><span class="card-title">Session Analytics</span></div>
+        <div class="card-body" id="sessionContainer"></div>
+      </div>
 
-      let cumPnl = 0, peak = 0, maxDD = 0;
-      for (const t of filtered) {
-        cumPnl += t.pnl;
-        if (cumPnl > peak) peak = cumPnl;
-        const dd = peak - cumPnl;
-        if (dd > maxDD) maxDD = dd;
-      }
+      <!-- A8: Correlation Matrix -->
+      <div class="card" id="card-correlation">
+        <div class="card-header"><span class="card-title">Correlation Matrix</span></div>
+        <div class="card-body" id="correlationContainer"></div>
+      </div>
 
-      const dates = [...new Set(filtered.map(t => t.date))].sort();
-      const dateSpan = dates.length ? (new Date(dates[dates.length-1]) - new Date(dates[0])) / (7*86400000) : 0;
-      const weeks = Math.max(dateSpan, 1);
-      const avgTradesWk = filtered.length / weeks;
+      <!-- A9: Allocation Treemap -->
+      <div class="card" id="card-treemap">
+        <div class="card-header"><span class="card-title">Allocation Treemap</span></div>
+        <div class="card-body" id="treemapContainer"></div>
+      </div>
 
-      return { winRate, totalPnl, profitFactor, maxDD, avgTradesWk, winCount: wins.length, lossCount: losses.length, tradeCount: filtered.length, weeks };
-    }
+      <!-- A10: Signal Timeline -->
+      <div class="card" id="card-signal-timeline">
+        <div class="card-header"><span class="card-title">Signal Timeline</span></div>
+        <div class="card-body" id="signalTimelineContainer"></div>
+      </div>
 
-    function fmtPnl(v) {
-      const sign = v >= 0 ? '+' : '';
-      return sign + '$' + Math.abs(v).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-    }
+      <!-- B11: Win Rate Donut -->
+      <div class="card" id="card-win-rate">
+        <div class="card-header"><span class="card-title">Win Rate</span></div>
+        <div class="card-body" id="winRateContainer"></div>
+      </div>
 
-    function fmtPoints(v) {
-      return (v >= 0 ? '+' : '') + v.toFixed(2);
-    }
+      <!-- B12: Profit Factor Gauge -->
+      <div class="card" id="card-profit-factor">
+        <div class="card-header"><span class="card-title">Profit Factor</span></div>
+        <div class="card-body" id="profitFactorContainer"></div>
+      </div>
 
-    function renderKPIs(kpis) {
-      const bar = document.getElementById('kpiBar');
-      const pnlClass = kpis.totalPnl >= 0 ? 'profit' : 'loss';
-      const ddClass = kpis.maxDD > 0 ? 'loss' : '';
+      <!-- B13: Max Drawdown Area -->
+      <div class="card" id="card-max-dd">
+        <div class="card-header"><span class="card-title">Max Drawdown</span></div>
+        <div class="card-body" id="maxDrawdownContainer"></div>
+      </div>
 
-      const filtered = getFiltered();
-      const dailyLosses = getDailyLossCounts(filtered);
-      const maxDailyLosses = Math.max(...Object.values(dailyLosses).map(d => d.losses), 0);
+      <!-- B14: Sharpe Scorecard -->
+      <div class="card" id="card-sharpe">
+        <div class="card-header"><span class="card-title">Sharpe Ratio</span></div>
+        <div class="card-body" id="sharpeContainer"></div>
+      </div>
 
-      let pnlExtra = '';
-      let pnlCardClass = '';
-      if (state.propMode && maxDailyLosses >= 2) {
-        pnlExtra = '<span class="badge crit">LIMIT</span>';
-        pnlCardClass = 'critical';
-      } else if (state.propMode && maxDailyLosses === 1) {
-        pnlExtra = '<span class="badge warn">1 LOSS</span>';
-        pnlCardClass = 'warning';
-      }
+      <!-- B15: Avg Trade P&L -->
+      <div class="card" id="card-avg-pnl">
+        <div class="card-header"><span class="card-title">Avg Trade P&L</span></div>
+        <div class="card-body" id="avgTradePnlContainer"></div>
+      </div>
 
-      bar.innerHTML = `
-        <div class="kpi-card" data-tip="Winning trades ÷ total trades. Target: >55%">
-          <div class="kpi-label">Win Rate</div>
-          <div class="kpi-value">${kpis.winRate.toFixed(1)}%</div>
-          <div class="kpi-sub">${kpis.winCount}W / ${kpis.lossCount}L of ${kpis.tradeCount}</div>
-        </div>
-        <div class="kpi-card primary ${pnlCardClass}" data-tip="Net profit/loss across all filtered trades">
-          <div class="kpi-label">Total PnL</div>
-          <div class="kpi-value ${pnlClass}">${fmtPnl(kpis.totalPnl)}</div>
-          <div class="kpi-sub">${pnlExtra}${!pnlExtra ? 'net sum' : ''}</div>
-        </div>
-        <div class="kpi-card" data-tip="Gross profit ÷ gross loss. >1.5 is healthy">
-          <div class="kpi-label">Profit Factor</div>
-          <div class="kpi-value">${kpis.profitFactor === Infinity ? '∞' : kpis.profitFactor.toFixed(2)}</div>
-          <div class="kpi-sub">gross profit / gross loss</div>
-        </div>
-        <div class="kpi-card" data-tip="Largest peak-to-trough decline in cumulative PnL">
-          <div class="kpi-label">Max Drawdown</div>
-          <div class="kpi-value ${ddClass}">${kpis.maxDD > 0 ? '-' + '$' + kpis.maxDD.toLocaleString('en-US', {minimumFractionDigits:2}) : '$0.00'}</div>
-          <div class="kpi-sub">peak-to-trough</div>
-        </div>
-        <div class="kpi-card" data-tip="Average number of trades per calendar week">
-          <div class="kpi-label">Avg Trades / Week</div>
-          <div class="kpi-value">${kpis.avgTradesWk.toFixed(1)}</div>
-          <div class="kpi-sub">${kpis.tradeCount} trades in ${kpis.weeks.toFixed(1)} weeks</div>
-        </div>
-      `;
-    }
+      <!-- B16: Total Trades -->
+      <div class="card" id="card-total-trades">
+        <div class="card-header"><span class="card-title">Total Trades</span></div>
+        <div class="card-body" id="totalTradesContainer"></div>
+      </div>
 
-    function renderPropBanner(kpis) {
-      const banner = document.getElementById('propBanner');
-      if (!state.propMode) { banner.className = 'prop-banner'; banner.textContent = ''; return; }
-      const filtered = getFiltered();
-      const dailyLosses = getDailyLossCounts(filtered);
-      const maxDailyLosses = Math.max(...Object.values(dailyLosses).map(d => d.losses), 0);
-      if (maxDailyLosses >= 2) {
-        banner.className = 'prop-banner crit';
-        banner.textContent = 'Daily loss limit reached';
-      } else if (maxDailyLosses === 1) {
-        banner.className = 'prop-banner warn';
-        banner.textContent = '1 loss today — next loss hits daily limit';
-      } else {
-        banner.className = 'prop-banner';
-        banner.textContent = '';
-      }
-    }
+      <!-- B17: Best/Worst Trade -->
+      <div class="card" id="card-best-worst">
+        <div class="card-header"><span class="card-title">Best / Worst Trade</span></div>
+        <div class="card-body" id="bestWorstContainer"></div>
+      </div>
 
-    function getDailyLossCounts(filtered) {
-      const byDate = {};
-      for (const t of filtered) {
-        if (!byDate[t.date]) byDate[t.date] = { losses: 0 };
-        if (t.pnl < 0) byDate[t.date].losses++;
-      }
-      return byDate;
-    }
+      <!-- B18: Consecutive Streaks -->
+      <div class="card" id="card-streaks">
+        <div class="card-header"><span class="card-title">Win/Loss Streaks</span></div>
+        <div class="card-body" id="streaksContainer"></div>
+      </div>
 
-    function updateSortArrows() {
-      document.querySelectorAll('th[data-sort]').forEach(th => {
-        const arrow = th.querySelector('.sort-arrow');
-        const isSorted = th.dataset.sort === state.sortKey;
-        th.classList.toggle('sorted', isSorted);
-        if (isSorted) {
-          arrow.textContent = state.sortDir === 'asc' ? '↑' : '↓';
-        } else {
-          arrow.textContent = '↕';
-        }
-      });
-    }
+      <!-- B19: Risk/Reward Scatter -->
+      <div class="card" id="card-risk-reward">
+        <div class="card-header"><span class="card-title">Risk/Reward Scatter</span></div>
+        <div class="card-body" id="riskRewardContainer"></div>
+      </div>
 
-    function resetFilter() {
-      state.filter = 'all';
-      document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-      document.querySelector('.filter-chip[data-filter="all"]').classList.add('active');
-      render();
-    }
+      <!-- B20: Monthly P&L Waffle -->
+      <div class="card" id="card-monthly-pnl">
+        <div class="card-header"><span class="card-title">Monthly P&L</span></div>
+        <div class="card-body" id="monthlyPnlContainer"></div>
+      </div>
 
-    function renderTable(filtered) {
-      const tbody = document.getElementById('tradeBody');
-      const empty = document.getElementById('emptyState');
-      const emptyHint = document.getElementById('emptyHint');
-      const emptyAction = document.getElementById('emptyAction');
-      const dailyLosses = getDailyLossCounts(filtered);
+    </div>
+  </main>
 
-      updateSortArrows();
+  <!-- Heatmap Tooltip -->
+  <div class="heatmap-tooltip" id="heatmapTooltip"></div>
 
-      if (!filtered.length) {
-        tbody.innerHTML = '';
-        empty.style.display = 'block';
-        if (state.filter !== 'all') {
-          emptyHint.textContent = 'No trades match the ' + state.filter + ' session filter.';
-          emptyAction.style.display = 'inline';
-        } else {
-          emptyHint.textContent = 'No trade data available.';
-          emptyAction.style.display = 'none';
-        }
-        return;
-      }
-      empty.style.display = 'none';
-
-      tbody.innerHTML = filtered.map(t => {
-        const pnlCls = t.pnl >= 0 ? 'positive' : 'negative';
-        const ptsCls = t.points >= 0 ? 'positive' : 'negative';
-        const rCls = t.r_multiple >= 0 ? 'positive' : 'negative';
-        const dirCls = t.direction === 'Long' ? 'long' : 'short';
-        const violation = state.propMode && dailyLosses[t.date] && dailyLosses[t.date].losses >= 2 && t.pnl < 0;
-
-        return `<tr class="${violation ? 'prop-violation' : ''}">
-          <td class="cell-date">${t.date}</td>
-          <td class="cell-mono">${t.time}</td>
-          <td><span class="cell-session">${t.session}</span></td>
-          <td class="cell-mono">${t.symbol}</td>
-          <td class="cell-direction ${dirCls}">${t.direction}</td>
-          <td class="cell-mono">${t.entry.toFixed(2)}</td>
-          <td class="cell-mono">${t.exit.toFixed(2)}</td>
-          <td class="cell-points ${ptsCls}">${fmtPoints(t.points)}</td>
-          <td class="cell-r ${rCls}">${t.r_multiple >= 0 ? '+' : ''}${t.r_multiple.toFixed(1)}</td>
-          <td class="cell-pnl ${pnlCls}">${fmtPnl(t.pnl)}</td>
-        </tr>`;
-      }).join('');
-    }
-
-    function render() {
-      const filtered = getFiltered();
-      const kpis = calcKPIs(filtered);
-      renderKPIs(kpis);
-      renderPropBanner(kpis);
-      renderTable(filtered);
-    }
-
-    // Filter chips
-    document.querySelectorAll('.filter-chip').forEach(btn => {
-      btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-chip').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        state.filter = btn.dataset.filter;
-        render();
-      });
-    });
-
-    // Sort columns — click + keyboard
-    document.querySelectorAll('th[data-sort]').forEach(th => {
-      const handleSort = () => {
-        const key = th.dataset.sort;
-        if (state.sortKey === key) {
-          state.sortDir = state.sortDir === 'asc' ? 'desc' : 'asc';
-        } else {
-          state.sortKey = key;
-          state.sortDir = key === 'date' ? 'desc' : 'asc';
-        }
-        render();
-      };
-      th.addEventListener('click', handleSort);
-      th.addEventListener('keydown', e => {
-        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); handleSort(); }
-      });
-    });
-
-    // Prop firm toggle
-    const propBtn = document.getElementById('propToggle');
-    const toggleLabel = document.getElementById('toggleLabel');
-    const toggleStatus = document.getElementById('toggleStatus');
-
-    propBtn.addEventListener('click', function() {
-      state.propMode = !state.propMode;
-      this.classList.toggle('active', state.propMode);
-      this.setAttribute('aria-checked', state.propMode);
-      toggleLabel.classList.toggle('active', state.propMode);
-      toggleStatus.textContent = state.propMode ? 'On' : 'Off';
-      toggleStatus.style.color = state.propMode ? 'var(--accent)' : 'var(--text-secondary)';
-      render();
-    });
-
-    // Load data and render
-    fetch('mock-data.json')
-      .then(r => { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-      .then(data => {
-        trades.length = 0;
-        trades.push(...data.trades);
-        render();
-      })
-      .catch(err => {
-        console.error('Failed to load trade data:', err);
-        const emptyText = document.getElementById('emptyState').querySelector('.empty-text');
-        const emptyHint = document.getElementById('emptyHint');
-        if (emptyText) emptyText.textContent = 'Could not load trade data';
-        if (emptyHint) emptyHint.textContent = 'Please refresh the page.';
-        document.getElementById('emptyState').style.display = 'block';
-      });
-  </script>
+  <!-- Scripts -->
+  <script src="js/mock-data.js"></script>
+  <script src="js/viz-kpi-overview.js"></script>
+  <script src="js/viz-equity-curve.js"></script>
+  <script src="js/viz-trade-heatmap.js"></script>
+  <script src="js/viz-pnl-by-pair.js"></script>
+  <script src="js/viz-risk-radar.js"></script>
+  <script src="js/viz-trade-distribution.js"></script>
+  <script src="js/viz-session-analytics.js"></script>
+  <script src="js/viz-correlation-matrix.js"></script>
+  <script src="js/viz-allocation-treemap.js"></script>
+  <script src="js/viz-signal-timeline.js"></script>
+  <script src="js/viz-win-rate-donut.js"></script>
+  <script src="js/viz-profit-factor-gauge.js"></script>
+  <script src="js/viz-max-drawdown-area.js"></script>
+  <script src="js/viz-sharpe-scorecard.js"></script>
+  <script src="js/viz-avg-trade-pnl.js"></script>
+  <script src="js/viz-total-trades.js"></script>
+  <script src="js/viz-best-worst-trade.js"></script>
+  <script src="js/viz-consecutive-streaks.js"></script>
+  <script src="js/viz-risk-reward-scatter.js"></script>
+  <script src="js/viz-monthly-pnl-waffle.js"></script>
+  <script src="js/landing-page.js"></script>
+  <script src="js/app.js"></script>
 </body>
 </html>
