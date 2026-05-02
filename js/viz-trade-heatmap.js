@@ -3,21 +3,23 @@ window.VizTradeHeatmap = (() => {
   let tooltip = null;
 
   function getPnlColor(pnl, isDark) {
+    const T = window.ThemeColors();
     if (pnl > 0) {
       const intensity = Math.min(pnl / 500, 1);
-      return isDark
-        ? `rgba(34, 197, 94, ${0.2 + intensity * 0.7})`
-        : `rgba(22, 163, 74, ${0.15 + intensity * 0.7})`;
+      const base = T.dark ? [74, 222, 128] : [22, 163, 74];
+      const alpha = T.dark ? 0.2 + intensity * 0.7 : 0.15 + intensity * 0.7;
+      return `rgba(${base.join(',')}, ${alpha})`;
     } else if (pnl < 0) {
       const intensity = Math.min(Math.abs(pnl) / 500, 1);
-      return isDark
-        ? `rgba(239, 68, 68, ${0.2 + intensity * 0.7})`
-        : `rgba(220, 38, 38, ${0.15 + intensity * 0.7})`;
+      const base = T.dark ? [248, 113, 113] : [220, 38, 38];
+      const alpha = T.dark ? 0.2 + intensity * 0.7 : 0.15 + intensity * 0.7;
+      return `rgba(${base.join(',')}, ${alpha})`;
     }
-    return isDark ? '#2A2A2A' : '#E7E5E4';
+    return T.empty;
   }
 
   function init(bot, tfData, timeframe, isDark) {
+    const T = window.ThemeColors();
     const container = document.getElementById('heatmapContainer');
     if (!container) return;
 
@@ -65,7 +67,7 @@ window.VizTradeHeatmap = (() => {
         .attr('x', labelWidth + h * (cellSize + gap) + cellSize / 2)
         .attr('y', 12)
         .attr('text-anchor', 'middle')
-        .attr('fill', isDark ? '#78716C' : '#A8A29E')
+        .attr('fill', T.textTertiary)
         .attr('font-size', '9px')
         .attr('font-family', "'SF Mono', monospace")
         .text(h + ':00');
@@ -78,7 +80,7 @@ window.VizTradeHeatmap = (() => {
         .attr('x', labelWidth - 4)
         .attr('y', headerHeight + di * (cellSize + gap) + cellSize / 2 + 3)
         .attr('text-anchor', 'end')
-        .attr('fill', isDark ? '#A8A29E' : '#78716C')
+        .attr('fill', T.textMuted)
         .attr('font-size', '10px')
         .attr('font-weight', '500')
         .text(day);
@@ -96,7 +98,7 @@ window.VizTradeHeatmap = (() => {
           .attr('width', cellSize)
           .attr('height', cellSize)
           .attr('rx', 3)
-          .attr('fill', data.count > 0 ? getPnlColor(data.pnl, isDark) : (isDark ? '#1A1A1A' : '#F5F5F4'))
+          .attr('fill', data.count > 0 ? getPnlColor(data.pnl, isDark) : (T.canvasBg))
           .on('mouseenter', function(event) {
             if (data.count === 0) return;
             const rect = this.getBoundingClientRect();

@@ -8,17 +8,8 @@
   const _state = { container: null, ro: null, themeObs: null };
 
   function getTheme() {
-    const isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    return {
-      bg: isDark ? '#1A1B1E' : '#FAFAF9',
-      text: isDark ? '#E8E8EC' : '#1C1917',
-      textMuted: isDark ? '#9B9BA1' : '#78716C',
-      profit: isDark ? '#4ADE80' : '#16A34A',
-      loss: isDark ? '#F87171' : '#DC2626',
-      profitFill: isDark ? '#4ADE80' : '#16A34A',
-      lossFill: isDark ? '#F87171' : '#DC2626',
-      gridLine: isDark ? '#2A2B2E' : '#E7E5E4'
-    };
+    const T = window.ThemeColors();
+    return { bg: T.bg, text: T.text, textMuted: T.textMuted, profit: T.profit, loss: T.loss, profitFill: T.profit, lossFill: T.loss, gridLine: T.gridLine };
   }
 
   function render(botData, timeframe) {

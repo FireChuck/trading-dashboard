@@ -33,7 +33,7 @@
 
     const cards = bots.map((b, i) => {
       const pc = b.tf.totalPnl >= 0 ? 'var(--profit)' : 'var(--loss)';
-      return `<div style="background:var(--card-elevated-bg);border:1px solid var(--border-primary);border-radius:14px;padding:20px;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;opacity:0;animation:csu .5s ${i*120}ms ease-out forwards;position:relative;overflow:hidden;" onmouseenter="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-md)';this.style.borderColor='${b.color.main}'" onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.borderColor='var(--border-primary)'">
+      return `<div class="bot-landing-card" data-bot-id="${b.id}" style="background:var(--card-elevated-bg);border:1px solid var(--border-primary);border-radius:14px;padding:20px;cursor:pointer;transition:transform .2s ease,box-shadow .2s ease,border-color .2s ease;opacity:0;animation:csu .5s ${i*120}ms ease-out forwards;position:relative;overflow:hidden;" onmouseenter="this.style.transform='translateY(-4px)';this.style.boxShadow='var(--shadow-md)';this.style.borderColor='${b.color.main}'" onmouseleave="this.style.transform='';this.style.boxShadow='';this.style.borderColor='var(--border-primary)'">
         <div style="position:absolute;top:0;left:0;right:0;height:3px;background:${b.color.main};"></div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
           <div style="width:36px;height:36px;border-radius:10px;background:${b.color.bg || b.color.main + '15'};display:flex;align-items:center;justify-content:center;"><div style="width:14px;height:14px;border-radius:4px;background:${b.color.main};"></div></div>
@@ -121,6 +121,22 @@
       _c.querySelectorAll('[data-av]').forEach(el => {
         const v = parseFloat(el.dataset.av);
         animVal(el, Math.abs(v), 1200, v >= 0 ? '+$' : '-$', '');
+      });
+      // Bind click → navigate to dashboard with selected bot
+      const idMap = { momentumAlpha: 'momentum-alpha', meanReverter: 'mean-reverter', scalpMaster: 'scalp-master' };
+      _c.querySelectorAll('.bot-landing-card').forEach(card => {
+        card.addEventListener('click', () => {
+          const botId = idMap[card.dataset.botId];
+          if (!botId || !window.App) return;
+          window.App.showDashboard();
+          // Click the matching bot-tab to switch
+          const botTabBtns = document.querySelectorAll('.bot-tab');
+          botTabBtns.forEach(btn => {
+            if (btn.textContent.trim() === MOCK_DATA.bots[botId].name) {
+              btn.click();
+            }
+          });
+        });
       });
     }, 300);
 

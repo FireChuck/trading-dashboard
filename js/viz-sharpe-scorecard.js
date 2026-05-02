@@ -5,10 +5,7 @@
 (function(){
   'use strict';
   const S={container:null,ro:null,obs:null};
-  function theme(){
-    const d=document.documentElement.getAttribute('data-theme')==='dark';
-    return{text:d?'#E8E8EC':'#1C1917',muted:d?'#9B9BA1':'#78716C',red:d?'#F87171':'#DC2626',yellow:d?'#FBBF24':'#D97706',green:d?'#4ADE80':'#16A34A'};
-  }
+  function theme(){const T=window.ThemeColors();return{text:T.text,muted:T.textMuted,red:T.red,yellow:T.yellow,green:T.green};}
   function sColor(v){return v>=2?'green':v>=1?'yellow':'red';}
   function spark(pts,w,h,col){
     if(!pts||pts.length<2)return'';

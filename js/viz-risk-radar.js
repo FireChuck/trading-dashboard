@@ -11,8 +11,9 @@ window.VizRiskRadar = (() => {
     const radar = bot.riskRadar;
     if (!radar) return;
 
-    const lineColor = isDark ? '#3B82F6' : '#2563EB';
-    const bgColor = isDark ? 'rgba(59, 130, 246, 0.15)' : 'rgba(37, 99, 235, 0.1)';
+    const T = window.ThemeColors();
+    const lineColor = T.accent;
+    const bgColor = T.dark ? 'rgba(96, 165, 250, 0.15)' : 'rgba(37, 99, 235, 0.1)';
 
     chart = new Chart(canvas, {
       type: 'radar',
@@ -37,34 +38,19 @@ window.VizRiskRadar = (() => {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: isDark ? '#1A1A1A' : '#F5F5F4',
-            titleColor: isDark ? '#F5F5F4' : '#1C1917',
-            bodyColor: isDark ? '#A8A29E' : '#78716C',
-            borderColor: isDark ? '#2A2A2A' : '#E7E5E4',
-            borderWidth: 1,
-            padding: 10,
+            backgroundColor: T.tipBg, titleColor: T.text, bodyColor: T.textMuted,
+            borderColor: T.tipBorder, borderWidth: 1, padding: 10,
             bodyFont: { family: "'SF Mono', monospace", size: 12 },
-            callbacks: {
-              label: ctx => `${ctx.label}: ${ctx.parsed.r}/100`,
-            },
+            callbacks: { label: ctx => `${ctx.label}: ${ctx.parsed.r}/100` },
           },
         },
         scales: {
           r: {
-            beginAtZero: true,
-            max: 100,
-            ticks: {
-              stepSize: 25,
-              color: isDark ? '#78716C' : '#A8A29E',
-              backdropColor: 'transparent',
-              font: { size: 9 },
-            },
-            grid: { color: isDark ? '#2A2A2A' : '#E7E5E4' },
-            angleLines: { color: isDark ? '#2A2A2A' : '#E7E5E4' },
-            pointLabels: {
-              color: isDark ? '#A8A29E' : '#78716C',
-              font: { size: 10, weight: '500' },
-            },
+            beginAtZero: true, max: 100,
+            ticks: { stepSize: 25, color: T.textTertiary, backdropColor: 'transparent', font: { size: 9 } },
+            grid: { color: T.grid },
+            angleLines: { color: T.grid },
+            pointLabels: { color: T.textMuted, font: { size: 10, weight: '500' } },
           },
         },
       },

@@ -8,10 +8,11 @@
 
   function render(tf, botId) {
     if (!_c || !tf.trades || !tf.trades.length) return;
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const T = window.ThemeColors();
+    const dark = T.dark;
     const cols = window.MockDataFinal?.botColors?.[botId] || { main: '#3B82F6' };
-    const pc = getComputedStyle(document.documentElement).getPropertyValue('--profit').trim() || '#16A34A';
-    const lc = getComputedStyle(document.documentElement).getPropertyValue('--loss').trim() || '#DC2626';
+    const pc = T.profit;
+    const lc = T.loss;
     const w = 320, h = 240, pad = { t: 20, r: 20, b: 36, l: 48 };
     const trades = tf.trades;
     const maxR = Math.max(...trades.map(t => Math.abs(t.r_multiple)), 1);
@@ -38,12 +39,12 @@
     const ctx = cv.getContext('2d'), dpr = devicePixelRatio || 1;
     cv.width = w * dpr; cv.height = h * dpr; ctx.scale(dpr, dpr);
 
-    ctx.strokeStyle = dark ? '#2A2B2E' : '#E7E5E4'; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = T.gridLine; ctx.lineWidth = 1; ctx.setLineDash([4, 4]);
     ctx.beginPath(); ctx.moveTo(pad.l, zY); ctx.lineTo(w - pad.r, zY); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(zX, pad.t); ctx.lineTo(zX, h - pad.b); ctx.stroke();
     ctx.setLineDash([]);
 
-    ctx.fillStyle = dark ? '#555' : '#999'; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'center';
+    ctx.fillStyle = T.dot; ctx.font = '10px -apple-system,sans-serif'; ctx.textAlign = 'center';
     ctx.fillText('Risk (R)', w / 2, h - 4);
     ctx.save(); ctx.translate(12, h / 2); ctx.rotate(-Math.PI / 2); ctx.fillText('P&L ($)', 0, 0); ctx.restore();
 

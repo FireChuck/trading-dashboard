@@ -5,9 +5,7 @@
 (function(){
   'use strict';
   const S={container:null,ro:null,obs:null};
-  function theme(){
-    const d=document.documentElement.getAttribute('data-theme')==='dark';
-    return{bg:d?'#1A1B1E':'#FAFAF9',text:d?'#E8E8EC':'#1C1917',muted:d?'#9B9BA1':'#78716C',tipBg:d?'#222326':'#FFF',tipBorder:d?'#3A3B3E':'#E7E5E4'};
+  function theme(){const T=window.ThemeColors();return{text:T.text,muted:T.textMuted,tipBg:T.tipBg,tipBorder:T.tipBorder};}
   }
   function treemapLayout(items,x,y,w,h){
     if(!items.length||w<=0||h<=0)return[];

@@ -7,7 +7,8 @@
   function ease(t) { return t === 1 ? 1 : 1 - Math.pow(2, -10 * t); }
   function render(tf, botId) {
     if (!_c) return;
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+    const T = window.ThemeColors();
+    const dark = T.dark;
     const cols = window.MockDataFinal?.botColors?.[botId] || { main: '#3B82F6', light: '#93C5FD', dark: '#1E40AF' };
     const accent = dark ? cols.light : cols.dark;
     const trades = tf.trades || [];

@@ -6,10 +6,7 @@
 (function(){
   'use strict';
   const S={container:null,ro:null,obs:null,af:null};
-  function theme(){
-    const d=document.documentElement.getAttribute('data-theme')==='dark';
-    return{bg:d?'#1A1B1E':'#FAFAF9',text:d?'#E8E8EC':'#1C1917',muted:d?'#9B9BA1':'#78716C',red:d?'#F87171':'#DC2626',yellow:d?'#FBBF24':'#D97706',green:d?'#4ADE80':'#16A34A',track:d?'#222326':'#EFEFED'};
-  }
+  function theme(){const T=window.ThemeColors();return{bg:T.bg,text:T.text,muted:T.textMuted,red:T.red,yellow:T.yellow,green:T.green,track:T.gridLine};}
   function p2c(cx,cy,r,a){const rad=(a-90)*Math.PI/180;return{x:cx+r*Math.cos(rad),y:cy+r*Math.sin(rad)};}
   function arc(cx,cy,r,s,e){const sp=p2c(cx,cy,r,s),ep=p2c(cx,cy,r,e),l=(e-s)>180?1:0;return`M ${sp.x} ${sp.y} A ${r} ${r} 0 ${l} 1 ${ep.x} ${ep.y}`;}
   function pfAngle(v){return 180-Math.max(0,Math.min(3,v))/3*180;}

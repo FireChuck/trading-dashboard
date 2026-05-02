@@ -5,10 +5,7 @@
 (function(){
   'use strict';
   const S={container:null,ro:null,obs:null};
-  function theme(){
-    const d=document.documentElement.getAttribute('data-theme')==='dark';
-    return{bg:d?'#1A1B1E':'#FAFAF9',text:d?'#E8E8EC':'#1C1917',muted:d?'#9B9BA1':'#78716C',border:d?'#2A2B2E':'#E7E5E4',tipBg:d?'#222326':'#FFF',tipBorder:d?'#3A3B3E':'#E7E5E4'};
-  }
+  function theme(){const T=window.ThemeColors();return{bg:T.bg,text:T.text,muted:T.textMuted,border:T.border,tipBg:T.tipBg,tipBorder:T.tipBorder};}
   function cColor(v){
     if(v>=0){const t=Math.min(v,1);return`rgb(255,${Math.round(255*(1-t))},${Math.round(255*(1-t))})`;}
     const t=Math.min(-v,1);return`rgb(${Math.round(255*(1-t))},${Math.round(255*(1-t))},255)`;

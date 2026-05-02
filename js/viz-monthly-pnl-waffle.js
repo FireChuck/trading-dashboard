@@ -8,9 +8,10 @@
 
   function render(tf) {
     if (!_c || !tf.monthlyPnl || !Object.keys(tf.monthlyPnl).length) return;
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const pc = getComputedStyle(document.documentElement).getPropertyValue('--profit').trim() || '#16A34A';
-    const lc = getComputedStyle(document.documentElement).getPropertyValue('--loss').trim() || '#DC2626';
+    const T = window.ThemeColors();
+    const dark = T.dark;
+    const pc = T.profit;
+    const lc = T.loss;
     const months = Object.keys(tf.monthlyPnl).sort();
     const total = months.reduce((s, m) => s + tf.monthlyPnl[m], 0);
     const maxAbs = Math.max(...months.map(m => Math.abs(tf.monthlyPnl[m])), 1);
@@ -22,7 +23,7 @@
       const label = new Date(m + '-01').toLocaleDateString('en-US', { month: 'short' });
       let blocks = '';
       for (let i = 0; i < sq; i++) {
-        const f = i < filled, bg = f ? color : (dark ? '#222326' : '#F0EEEC');
+        const f = i < filled, bg = f ? color : T.empty;
         blocks += `<div style="width:16px;height:16px;border-radius:3px;background:${bg};opacity:0;animation:wi .25s ${mi*60+i*30}ms ease-out forwards;transition:transform .1s ease;cursor:default;" title="${label}: ${fmt(v)}" onmouseenter="this.style.transform='scale(1.2)'" onmouseleave="this.style.transform='scale(1)'"></div>`;
       }
       return `<div style="display:flex;align-items:center;gap:8px;">

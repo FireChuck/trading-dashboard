@@ -2,15 +2,19 @@
 window.VizEquityCurve = (() => {
   let chart = null;
 
-  function getChartColors(isDark) {
-    const cs = getComputedStyle(document.documentElement);
+  function getChartColors() {
+    const T = window.ThemeColors();
     return {
-      line: isDark ? '#3B82F6' : '#2563EB',
-      lineBg: isDark ? 'rgba(59, 130, 246, 0.08)' : 'rgba(37, 99, 235, 0.06)',
-      ddLine: isDark ? '#EF4444' : '#DC2626',
-      ddBg: isDark ? 'rgba(239, 68, 68, 0.1)' : 'rgba(220, 38, 38, 0.06)',
-      grid: cs.getPropertyValue('--chart-grid').trim(),
-      text: cs.getPropertyValue('--chart-text').trim(),
+      line: T.accent,
+      lineBg: T.dark ? 'rgba(96, 165, 250, 0.08)' : 'rgba(37, 99, 235, 0.06)',
+      ddLine: T.loss,
+      ddBg: T.lossFill,
+      grid: T.grid,
+      text: T.textMuted,
+      tipBg: T.tipBg,
+      tipBorder: T.tipBorder,
+      tipTitle: T.text,
+      tipBody: T.textMuted,
     };
   }
 
@@ -79,10 +83,10 @@ window.VizEquityCurve = (() => {
         plugins: {
           legend: { display: false },
           tooltip: {
-            backgroundColor: isDark ? '#1A1A1A' : '#F5F5F4',
-            titleColor: isDark ? '#F5F5F4' : '#1C1917',
-            bodyColor: isDark ? '#A8A29E' : '#78716C',
-            borderColor: isDark ? '#2A2A2A' : '#E7E5E4',
+            backgroundColor: colors.tipBg,
+            titleColor: colors.tipTitle,
+            bodyColor: colors.tipBody,
+            borderColor: colors.tipBorder,
             borderWidth: 1,
             padding: 10,
             displayColors: true,

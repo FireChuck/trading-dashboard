@@ -9,9 +9,10 @@
 
   function render(tf) {
     if (!_c || !tf.bestTrade || !tf.worstTrade) return;
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    const pc = getComputedStyle(document.documentElement).getPropertyValue('--profit').trim() || '#16A34A';
-    const lc = getComputedStyle(document.documentElement).getPropertyValue('--loss').trim() || '#DC2626';
+    const T = window.ThemeColors();
+    const dark = T.dark;
+    const pc = T.profit;
+    const lc = T.loss;
     const mkCard = (trade, type) => {
       const isBest = type === 'best';
       const color = isBest ? pc : lc;
@@ -28,11 +29,11 @@
       <div style="font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.06em;color:var(--text-secondary);text-align:center;margin-bottom:16px;">Best & Worst Trade</div>
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">${mkCard(tf.bestTrade, 'best')}${mkCard(tf.worstTrade, 'worst')}</div>
     </div>`;
-    drawCurve('.bwc-best', tf.bestTrade, pc, dark);
-    drawCurve('.bwc-worst', tf.worstTrade, lc, dark);
+    drawCurve('.bwc-best', tf.bestTrade, pc, dark, T);
+    drawCurve('.bwc-worst', tf.worstTrade, lc, dark, T);
   }
 
-  function drawCurve(sel, t, color, dark) {
+  function drawCurve(sel, t, color, dark, themeObj) {
     const cv = _c.querySelector(sel); if (!cv) return;
     const ctx = cv.getContext('2d'), dpr = devicePixelRatio || 1;
     const w = 200, h = 70; cv.width = w * dpr; cv.height = h * dpr; ctx.scale(dpr, dpr);
@@ -52,7 +53,7 @@
       ctx.beginPath(); ctx.moveTo(sX, sY);
       for (let i = 1; i <= steps; i++) { const tt = i / 30; ctx.lineTo((1-tt)*(1-tt)*sX + 2*(1-tt)*tt*(sX+eX)/2 + tt*tt*eX, (1-tt)*(1-tt)*sY + 2*(1-tt)*tt*cpY + tt*tt*eY); }
       ctx.strokeStyle = g; ctx.lineWidth = 3; ctx.lineCap = 'round'; ctx.stroke();
-      ctx.beginPath(); ctx.arc(sX, sY, 4, 0, Math.PI * 2); ctx.fillStyle = dark ? '#666' : '#999'; ctx.fill();
+      ctx.beginPath(); ctx.arc(sX, sY, 4, 0, Math.PI * 2); ctx.fillStyle = themeObj.dot; ctx.fill();
       if (p < 1) { const tt = e; ctx.beginPath(); ctx.arc((1-tt)*(1-tt)*sX+2*(1-tt)*tt*(sX+eX)/2+tt*tt*eX, (1-tt)*(1-tt)*sY+2*(1-tt)*tt*cpY+tt*tt*eY, 5, 0, Math.PI*2); ctx.fillStyle = color; ctx.fill(); _raf = requestAnimationFrame(draw); }
       else { ctx.beginPath(); ctx.arc(eX, eY, 4, 0, Math.PI * 2); ctx.fillStyle = color; ctx.fill(); }
     })(t0);

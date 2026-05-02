@@ -303,9 +303,19 @@ const MOCK_DATA = (() => {
       };
     };
 
+    // Generate distinct trade pools per timeframe (different seeds)
+    const weeklyTrades = (() => {
+      seed = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) * 251;
+      return generateDailyTrades({ ...config, minTradesPerDay: Math.max(1, config.minTradesPerDay - 1), maxTradesPerDay: config.maxTradesPerDay, avgWinMin: config.avgWinMin * 1.3, avgWinMax: config.avgWinMax * 1.5, avgLossMin: config.avgLossMin * 1.2, avgLossMax: config.avgLossMax * 1.4 }, 90);
+    })();
+    const monthlyTrades = (() => {
+      seed = id.split('').reduce((a, c) => a + c.charCodeAt(0), 0) * 397;
+      return generateDailyTrades({ ...config, minTradesPerDay: Math.max(1, config.minTradesPerDay - 1), maxTradesPerDay: Math.ceil(config.maxTradesPerDay / 2), avgWinMin: config.avgWinMin * 1.8, avgWinMax: config.avgWinMax * 2.0, avgLossMin: config.avgLossMin * 1.5, avgLossMax: config.avgLossMax * 1.8 }, 120);
+    })();
+
     const dailyTf = buildTfData(dailyTrades);
-    const weeklyTf = buildTfData(dailyTrades);
-    const monthlyTf = buildTfData(dailyTrades);
+    const weeklyTf = buildTfData(weeklyTrades);
+    const monthlyTf = buildTfData(monthlyTrades);
 
     // MOCK_DATA structure (for original 7 modules + app.js)
     bots[id] = {

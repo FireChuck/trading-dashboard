@@ -6,8 +6,8 @@
   'use strict';
   const S={container:null,chart:null,ro:null,obs:null};
   function theme(){
-    const d=document.documentElement.getAttribute('data-theme')==='dark';
-    return{text:d?'#E8E8EC':'#1C1917',muted:d?'#9B9BA1':'#78716C',loss:d?'#F87171':'#DC2626',lossFill:d?'rgba(248,113,113,.12)':'rgba(220,38,38,.08)',grid:d?'rgba(42,43,46,.6)':'rgba(231,229,228,.6)',wm:d?'rgba(248,113,113,.04)':'rgba(220,38,38,.03)'};
+    const T=window.ThemeColors();
+    return{text:T.text,muted:T.textMuted,loss:T.loss,lossFill:T.lossFill,grid:T.gridLine,wm:T.dark?'rgba(248,113,113,.04)':'rgba(220,38,38,.03)',tipBg:T.tipBg,tipBorder:T.tipBorder};
   }
   function render(botData,tf){
     if(!S.container)return;const T=theme(),data=botData[tf]||botData.daily,curve=data.drawdownCurve||[],W=S.container.clientWidth||400,H=Math.max(W*.55,200);
@@ -21,7 +21,7 @@
       data:{labels:curve.map(d=>d.date.slice(5)),datasets:[{data:curve.map(d=>-d.dd),borderColor:T.loss,borderWidth:2.5,backgroundColor:grad,fill:true,tension:.4,pointRadius:curve.map((_,i)=>i===maxIdx?6:0),pointBackgroundColor:curve.map((_,i)=>i===maxIdx?T.loss:'transparent'),pointBorderColor:T.loss,pointBorderWidth:2,pointHoverRadius:6}]},
       options:{responsive:false,animation:{duration:700,easing:'easeOutQuart'},
         scales:{x:{grid:{color:T.grid,drawBorder:false},ticks:{color:T.muted,font:{size:10,family:'var(--mono)'},maxRotation:0},border:{display:false}},y:{grid:{color:T.grid,drawBorder:false},ticks:{color:T.muted,font:{size:10,family:'var(--mono)'},callback:v=>'-$'+Math.abs(v).toLocaleString()},border:{display:false}}},
-        plugins:{legend:{display:false},tooltip:{backgroundColor:T.text,titleColor:'#FFF',bodyColor:'#FFF',cornerRadius:8,padding:10,bodyFont:{family:'var(--sans)',size:12},callbacks:{title:i=>i[0].label,label:c=>` Drawdown: -$${Math.abs(c.parsed.y).toLocaleString()}`}}},
+        plugins:{legend:{display:false},tooltip:{backgroundColor:T.tipBg,titleColor:T.text,bodyColor:T.muted,cornerRadius:8,padding:10,borderColor:T.tipBorder,bodyFont:{family:'var(--sans)',size:12},callbacks:{title:i=>i[0].label,label:c=>` Drawdown: -$${Math.abs(c.parsed.y).toLocaleString()}`}}},
         interaction:{intersect:false,mode:'index'}}
     });
   }

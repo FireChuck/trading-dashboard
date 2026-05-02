@@ -5,10 +5,7 @@
 (function(){
   'use strict';
   const S={container:null,ro:null,obs:null};
-  function theme(){
-    const d=document.documentElement.getAttribute('data-theme')==='dark';
-    return{bg:d?'#1A1B1E':'#FAFAF9',cardBg:d?'#222326':'#FFF',text:d?'#E8E8EC':'#1C1917',muted:d?'#9B9BA1':'#78716C',profit:d?'#4ADE80':'#16A34A',loss:d?'#F87171':'#DC2626',line:d?'#3A3B3E':'#D6D3D1'};
-  }
+  function theme(){const T=window.ThemeColors();return{bg:T.bgSecondary,cardBg:T.cardBg,text:T.text,muted:T.textMuted,profit:T.profit,loss:T.loss,line:T.line};}
   function render(botData,tf){
     if(!S.container)return;const T=theme(),data=botData[tf]||botData.daily,sigs=data.signals||[],H=360;
     let h=`<div style="position:relative;width:100%;height:${H}px;overflow:hidden">`;

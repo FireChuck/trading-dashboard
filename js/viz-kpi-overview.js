@@ -40,7 +40,8 @@ window.VizKpiOverview = (() => {
   function init(bot, tfData, timeframe, isDark) {
     if (currentAnimFrame) cancelAnimationFrame(currentAnimFrame);
 
-    const kpis = tfData.kpis;
+    // KPIs are flat on tfData (from computeKPIs), not nested under .kpis
+    const kpis = tfData;
     if (!kpis || !kpis.totalTrades) return;
 
     const cards = [
@@ -72,6 +73,8 @@ window.VizKpiOverview = (() => {
 
   function destroy() {
     if (currentAnimFrame) cancelAnimationFrame(currentAnimFrame);
+    const grid = document.getElementById('kpiGrid');
+    if (grid) grid.innerHTML = '';
   }
 
   return { init, destroy };
