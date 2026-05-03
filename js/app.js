@@ -41,9 +41,10 @@ const App = (() => {
     if (chartLoading) return chartLoading;
     chartLoading = (async () => {
       try {
-        const mod = await import('https://cdn.jsdelivr.net/npm/chart.js@4.4.7/+esm');
-        Chart = mod.Chart;
-        window.Chart = Chart; // expose for legacy viz modules
+        // Use UMD build — auto-registers all scales, elements, plugins
+        await import('https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js');
+        // UMD sets window.Chart
+        Chart = window.Chart;
         return Chart;
       } catch (e) {
         console.error('Failed to lazy-load Chart.js:', e);
@@ -222,7 +223,7 @@ const App = (() => {
 
     // Load viz module dynamically — ES module with export function render()
     try {
-      const mod = await import(`./js/${meta.file}.js`);
+      const mod = await import(`./${meta.file}.js`);
       const VizModule = mod.default || mod;
 
       // Ensure Chart.js is loaded (except for kpi-overview which may be DOM-only)
@@ -276,7 +277,7 @@ const App = (() => {
   async function renderCompare() {
     await ensureChart();
     try {
-      const mod = await import('./js/compare.js');
+      const mod = await import('./compare.js');
       const CompareModule = mod.default || mod.CompareModule || mod;
       if (!CompareModule || typeof CompareModule.render !== 'function') throw new Error('Compare module has no render function');
       const app = appEl();
@@ -311,7 +312,7 @@ const App = (() => {
     if (topbarTitle()) topbarTitle().textContent = '📊 Trading Analytics';
 
     try {
-      await import('./js/landing-page.js');
+      await import('./landing-page.js');
       const LP = window.LandingPage;
       if (!LP || typeof LP.init !== 'function') throw new Error('LandingPage not found');
       const app = appEl();

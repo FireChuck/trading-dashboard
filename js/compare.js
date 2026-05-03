@@ -152,11 +152,9 @@ const CompareModule = (() => {
     chartContainer.innerHTML = '<div class="compare-loading">Loading…</div>';
 
     try {
-      // Ensure Chart.js is available (global from app.js lazy-load)
-      if (typeof Chart === 'undefined') {
-        // If not loaded yet, try dynamic import
-        const mod = await import('https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js');
-        // Chart.js UMD sets window.Chart
+      // Ensure Chart.js is available (set as window.Chart by app.js ensureChart())
+      if (typeof window.Chart === 'undefined') {
+        throw new Error('Chart.js not loaded. Navigate to a chart view first to trigger lazy-load.');
       }
 
       // Dynamic import the viz module
@@ -178,6 +176,9 @@ const CompareModule = (() => {
         chartContainer.innerHTML = `<div class="compare-error">No data for bot "${panel.botId}"</div>`;
         return;
       }
+
+      // Clear "Loading..." before rendering
+      chartContainer.innerHTML = '';
 
       // Call the viz render — ES module API: export function render(container, botData, options)
       const renderFn = vizModule.render || (vizModule.default && vizModule.default.render);

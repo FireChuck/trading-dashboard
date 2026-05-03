@@ -104,7 +104,7 @@ export function render(container, botData, options = {}) {
               const b = bubbles[c.dataIndex];
               if (!b || b.count === 0) return '';
               const pnlColor = b.pnl >= 0 ? '🟢' : '🔴';
-              return [`${b.day} ${b.x}:00`, `${pnlColor} $${b.pnl.toFixed(0)} · ${b.count} trades`];
+              return [`${b.day} ${String(Math.round(b.x)).padStart(2, '0')}:00`, `${pnlColor} $${b.pnl.toFixed(0)} · ${b.count} trades`];
             },
           },
         },
@@ -118,7 +118,10 @@ export function render(container, botData, options = {}) {
             color: T.textMuted || '#94A3B8',
             font: { size: 9, family: "'SF Mono',monospace" },
             stepSize: 3,
-            callback: v => v + ':00',
+            callback: v => {
+              const h = Math.round(v);
+              return String(h).padStart(2, '0') + ':00';
+            },
           },
           title: { display: true, text: 'Hour (UTC)', color: T.textMuted || '#94A3B8', font: { size: 10 } },
         },
