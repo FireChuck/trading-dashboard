@@ -41,13 +41,13 @@ const App = (() => {
     if (chartLoading) return chartLoading;
     chartLoading = (async () => {
       try {
-        // Use UMD build — auto-registers all scales, elements, plugins
-        await import('https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.js');
-        // UMD sets window.Chart
+        // Chart.js is loaded as a classic <script> in index.html (UMD build)
+        // It sets window.Chart globally
         Chart = window.Chart;
+        if (!Chart) throw new Error('Chart.js not found on window');
         return Chart;
       } catch (e) {
-        console.error('Failed to lazy-load Chart.js:', e);
+        console.error('Failed to get Chart.js:', e);
         chartLoading = null;
         throw e;
       }
@@ -277,8 +277,8 @@ const App = (() => {
   async function renderCompare() {
     await ensureChart();
     try {
-      const mod = await import('./compare.js');
-      const CompareModule = mod.default || mod.CompareModule || mod;
+      // compare.js is loaded as classic script (IIFE), sets window.CompareModule
+      const CompareModule = window.CompareModule;
       if (!CompareModule || typeof CompareModule.render !== 'function') throw new Error('Compare module has no render function');
       const app = appEl();
       const container = document.createElement('div');
@@ -312,7 +312,7 @@ const App = (() => {
     if (topbarTitle()) topbarTitle().textContent = '📊 Trading Analytics';
 
     try {
-      await import('./landing-page.js');
+      // landing-page.js is loaded as classic script (IIFE), sets window.LandingPage
       const LP = window.LandingPage;
       if (!LP || typeof LP.init !== 'function') throw new Error('LandingPage not found');
       const app = appEl();
