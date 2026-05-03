@@ -320,7 +320,8 @@ MOCK_DATA.botIds.forEach(id => {
   const camel = idToCamel[id] || id;
   const bot = MOCK_DATA.bots[id];
   botNames[camel] = bot.name;
-  allBots[camel] = { ...bot.monthly, daily: bot.daily, weekly: bot.weekly, monthly: bot.monthly };
+  const monthly = { ...bot.monthly, maxDD: bot.monthly.maxDrawdown };
+  allBots[camel] = { ...bot.monthly, daily: { ...bot.daily, maxDD: bot.daily.maxDrawdown }, weekly: { ...bot.weekly, maxDD: bot.weekly.maxDrawdown }, monthly };
 });
 
 window.MockDataFinal = {
