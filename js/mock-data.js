@@ -267,6 +267,9 @@ const MOCK_DATA = (() => {
   };
 })();
 
+// Expose MOCK_DATA globally for scripts that reference it directly
+window.MOCK_DATA = MOCK_DATA;
+
 // ═══════════════════════════════════════════════════════════════════════════
 // PUBLIC API: getMockData(botId, timeframe)
 // ═══════════════════════════════════════════════════════════════════════════
@@ -299,3 +302,29 @@ window.getMockData = function(botId, timeframe) {
 window.getMockData.botIds = MOCK_DATA.botIds;
 window.getMockData.timeframes = ['daily', 'weekly', 'monthly'];
 window.getMockData.allBotIds = MOCK_DATA.botIds;
+
+// MockDataFinal — Adapter for landing-page.js (camelCase keys)
+const idToCamel = {
+  'alpha-trader': 'alphaTrader',
+  'scalp-master': 'scalpMaster',
+  'trend-rider': 'trendRider',
+};
+const botColors = {
+  alphaTrader: { main: '#2563EB', bg: 'rgba(37,99,235,0.08)' },
+  scalpMaster: { main: '#7C3AED', bg: 'rgba(124,58,237,0.08)' },
+  trendRider: { main: '#059669', bg: 'rgba(5,150,105,0.08)' },
+};
+const botNames = {};
+const allBots = {};
+MOCK_DATA.botIds.forEach(id => {
+  const camel = idToCamel[id] || id;
+  const bot = MOCK_DATA.bots[id];
+  botNames[camel] = bot.name;
+  allBots[camel] = { ...bot.monthly, daily: bot.daily, weekly: bot.weekly, monthly: bot.monthly };
+});
+
+window.MockDataFinal = {
+  getAllBots: () => allBots,
+  botColors,
+  botNames,
+};

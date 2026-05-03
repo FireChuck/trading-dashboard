@@ -214,11 +214,5 @@ const CompareModule = (() => {
   return { render, destroy, VIZ_NAMES };
 })();
 
-// Export for ES module consumers
-if (typeof module !== 'undefined' && module.exports) {
-  module.exports = CompareModule;
-}
-// Also expose globally for script-tag usage
+// Expose globally for script-tag usage
 window.CompareModule = CompareModule;
-export { CompareModule };
-export default CompareModule;

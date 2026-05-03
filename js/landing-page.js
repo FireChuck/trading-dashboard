@@ -132,7 +132,7 @@
           // Click the matching bot-tab to switch
           const botTabBtns = document.querySelectorAll('.bot-tab');
           botTabBtns.forEach(btn => {
-            if (btn.textContent.trim() === MOCK_DATA.bots[botId].name) {
+            if (btn.textContent.trim() === (window.MOCK_DATA && window.MOCK_DATA.bots[botId] ? window.MOCK_DATA.bots[botId].name : botId)) {
               btn.click();
             }
           });
