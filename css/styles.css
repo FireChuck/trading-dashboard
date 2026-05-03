@@ -215,7 +215,6 @@ body {
 #app {
   padding: var(--space-5);
   max-width: 1200px;
-  animation: fadeIn var(--tr) ease-out;
 }
 
 /* ── Card / Panel ── */
@@ -226,7 +225,7 @@ body {
   box-shadow: var(--shadow-sm);
   overflow: hidden;
   transition: background var(--tr-normal), border-color var(--tr-normal), box-shadow var(--tr-normal);
-  animation: fadeIn var(--tr-normal) both;
+  contain: layout style paint;
 }
 .card:hover { box-shadow: var(--shadow-md); }
 .card-header {
@@ -241,33 +240,17 @@ body {
 }
 .card-body { padding: var(--space-4); }
 
-/* Staggered card animations */
-.card:nth-child(1) { animation-delay: 0ms; }
-.card:nth-child(2) { animation-delay: 30ms; }
-.card:nth-child(3) { animation-delay: 60ms; }
-.card:nth-child(4) { animation-delay: 90ms; }
-.card:nth-child(5) { animation-delay: 120ms; }
-.card:nth-child(6) { animation-delay: 150ms; }
-.card:nth-child(7) { animation-delay: 180ms; }
-.card:nth-child(8) { animation-delay: 210ms; }
-.card:nth-child(9) { animation-delay: 240ms; }
-.card:nth-child(10) { animation-delay: 270ms; }
-.card:nth-child(11) { animation-delay: 300ms; }
-.card:nth-child(12) { animation-delay: 330ms; }
-.card:nth-child(13) { animation-delay: 360ms; }
-.card:nth-child(14) { animation-delay: 390ms; }
-.card:nth-child(15) { animation-delay: 420ms; }
-.card:nth-child(16) { animation-delay: 450ms; }
-.card:nth-child(17) { animation-delay: 480ms; }
-.card:nth-child(18) { animation-delay: 510ms; }
-.card:nth-child(19) { animation-delay: 540ms; }
-.card:nth-child(20) { animation-delay: 570ms; }
+/* Staggered card animations removed for CLS optimization */
 
 /* ── Dashboard Grid ── */
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--space-4);
+}
+.dashboard-grid > .card {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 350px;
 }
 
 /* ── KPI Cards ── */
@@ -313,8 +296,9 @@ body {
   position: relative;
   width: 100%;
   min-height: 300px;
+  aspect-ratio: 4 / 3;
 }
-.chart-container canvas { width: 100% !important; }
+.chart-container canvas { width: 100% !important; height: 100% !important; }
 
 /* ── Heatmap ── */
 .heatmap-wrapper {
@@ -379,7 +363,7 @@ body {
   font-size: var(--text-sm); font-weight: 600; color: var(--text-primary);
 }
 .compare-container { position: relative; }
-.compare-chart-area { min-height: 260px; }
+.compare-chart-area { min-height: 260px; aspect-ratio: 4 / 3; }
 .compare-chart-container { position: relative; width: 100%; }
 .compare-chart-container canvas { width: 100% !important; }
 .compare-title {
