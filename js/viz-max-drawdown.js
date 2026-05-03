@@ -37,17 +37,21 @@ export function render(container, botData, options = {}) {
         backgroundColor: grad,
         fill: true,
         tension: 0.4,
-        pointRadius: curve.map((_, i) => (i === maxIdx ? 6 : 0)),
-        pointBackgroundColor: curve.map((_, i) => (i === maxIdx ? (T.loss || '#EF4444') : 'transparent')),
+        pointRadius: 0,
+        pointBackgroundColor: curve.map(() => 'transparent'),
         pointBorderColor: T.loss || '#EF4444',
         pointBorderWidth: 2,
-        pointHoverRadius: 6,
+        pointHoverRadius: 4,
       }],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 700, easing: 'easeOutQuart' },
+      animation: false,
+      decimation: { enabled: true, threshold: 100 },
+      pointRadius: 0,
+      pointHoverRadius: 4,
+      elements: { line: { borderWidth: 1.5 } },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -85,13 +89,9 @@ export function render(container, botData, options = {}) {
     },
   });
 
-  const ro = new ResizeObserver(() => chart.resize());
-  ro.observe(container);
-
   return {
     destroy() {
-      ro.disconnect();
-      chart.destroy();
+      try { chart.destroy(); } catch (_) {}
       container.innerHTML = '';
     },
   };

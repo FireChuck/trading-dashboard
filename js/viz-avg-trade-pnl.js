@@ -35,7 +35,9 @@ export function render(container, botData, options = {}) {
       indexAxis: 'y',
       responsive: true,
       maintainAspectRatio: false,
-      animation: { duration: 500, easing: 'easeOutQuart' },
+      animation: false,
+      decimation: { enabled: true, threshold: 100 },
+      elements: { line: { borderWidth: 1.5 } },
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -74,13 +76,9 @@ export function render(container, botData, options = {}) {
     },
   });
 
-  const ro = new ResizeObserver(() => chart.resize());
-  ro.observe(container);
-
   return {
     destroy() {
-      ro.disconnect();
-      chart.destroy();
+      try { chart.destroy(); } catch (_) {}
       container.innerHTML = '';
     },
   };

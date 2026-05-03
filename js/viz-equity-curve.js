@@ -45,8 +45,6 @@ export function render(container, botData, options = {}) {
           borderWidth: 2,
           fill: true,
           tension: 0.3,
-          pointRadius: 0,
-          pointHitRadius: 8,
           yAxisID: 'y',
         },
         {
@@ -57,8 +55,6 @@ export function render(container, botData, options = {}) {
           borderWidth: 1.5,
           fill: true,
           tension: 0.3,
-          pointRadius: 0,
-          pointHitRadius: 8,
           yAxisID: 'y1',
         },
       ],
