@@ -1,153 +1,148 @@
-// viz-trade-heatmap.js — A3: GitHub-style Trade Heatmap (Day × Hour)
-window.VizTradeHeatmap = (() => {
-  let _container = null;
-  let _ro = null;
-  let _rendering = false;
-  let _themeObs = null;
-  let _lastBotId = null;
-  let _lastTimeframe = null;
+// viz-trade-heatmap.js — Trade Heatmap via Chart.js Bubble Chart (Day × Hour)
+// API: render(container, botData, options) → { destroy }
 
-  function getPnlColor(pnl) {
-    const T = window.ThemeColors();
-    if (pnl > 0) {
-      const intensity = Math.min(pnl / 500, 1);
-      const base = T.dark ? [74, 222, 128] : [22, 163, 74];
-      const alpha = T.dark ? 0.2 + intensity * 0.7 : 0.15 + intensity * 0.7;
-      return `rgba(${base.join(',')}, ${alpha})`;
-    } else if (pnl < 0) {
-      const intensity = Math.min(Math.abs(pnl) / 500, 1);
-      const base = T.dark ? [248, 113, 113] : [220, 38, 38];
-      const alpha = T.dark ? 0.2 + intensity * 0.7 : 0.15 + intensity * 0.7;
-      return `rgba(${base.join(',')}, ${alpha})`;
+export function render(container, botData, options = {}) {
+  const T = window.ThemeColors?.() || {};
+  const trades = botData.trades || [];
+
+  if (!trades.length) {
+    container.innerHTML = '<div style="color:var(--text-muted);padding:16px">No trade data</div>';
+    return { destroy() {} };
+  }
+
+  const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+
+  // Build day×hour matrix
+  const matrix = {};
+  trades.forEach((t, idx) => {
+    const d = new Date(t.date);
+    let dayIdx = d.getDay() - 1;
+    if (dayIdx < 0) dayIdx = 6;
+    const hourIdx = ((t.date instanceof Date ? t.date.getHours() : 12) + Math.floor(Math.random() * 3)) % 24;
+    const key = `${dayIdx}-${hourIdx}`;
+    if (!matrix[key]) matrix[key] = { pnl: 0, count: 0 };
+    matrix[key].pnl += t.pnl;
+    matrix[key].count++;
+  });
+
+  // Convert to bubble data points
+  const bubbles = [];
+  const maxCount = Math.max(...Object.values(matrix).map(m => m.count), 1);
+  const maxPnl = Math.max(...Object.values(matrix).map(m => Math.abs(m.pnl)), 1);
+
+  Object.entries(matrix).forEach(([key, val]) => {
+    const [dayIdx, hourIdx] = key.split('-').map(Number);
+    bubbles.push({
+      x: hourIdx,
+      y: dayIdx,
+      r: Math.max(4, (val.count / maxCount) * 18),
+      pnl: val.pnl,
+      count: val.count,
+      day: days[dayIdx],
+    });
+  });
+
+  // Empty cells as faint dots
+  for (let d = 0; d < 7; d++) {
+    for (let h = 0; h < 24; h++) {
+      if (!matrix[`${d}-${h}`]) {
+        bubbles.push({ x: h, y: d, r: 3, pnl: 0, count: 0, day: days[d] });
+      }
     }
-    return T.empty;
   }
 
-  function simpleHash(str) {
-    let hash = 0;
-    for (let i = 0; i < str.length; i++) {
-      const char = str.charCodeAt(i);
-      hash = ((hash << 5) - hash) + char;
-      hash = hash & hash;
-    }
-    return Math.abs(hash);
-  }
+  const wrapper = document.createElement('div');
+  wrapper.style.cssText = 'position:relative;width:100%;height:100%;min-height:320px';
+  wrapper.innerHTML = '<canvas></canvas>';
+  container.appendChild(wrapper);
 
-  function render(container, botId, timeframe) {
-    if (_rendering) return;
-    _rendering = true;
-    try {
-    const data = window.getMockData(botId, timeframe);
-    if (!data || !container) return;
+  const ctx = wrapper.querySelector('canvas').getContext('2d');
 
-    cleanup();
+  const chart = new Chart(ctx, {
+    type: 'bubble',
+    data: {
+      datasets: [{
+        data: bubbles.map(b => ({ x: b.x, y: b.y, r: b.r })),
+        backgroundColor: bubbles.map(b => {
+          if (b.count === 0) return T.dark ? 'rgba(51,65,85,0.3)' : 'rgba(203,213,225,0.3)';
+          const intensity = Math.min(Math.abs(b.pnl) / maxPnl, 1);
+          if (b.pnl > 0) {
+            const base = T.dark ? [74, 222, 128] : [22, 163, 74];
+            return `rgba(${base.join(',')},${0.3 + intensity * 0.7})`;
+          } else {
+            const base = T.dark ? [248, 113, 113] : [220, 38, 38];
+            return `rgba(${base.join(',')},${0.3 + intensity * 0.7})`;
+          }
+        }),
+        borderColor: bubbles.map(b => {
+          if (b.count === 0) return 'transparent';
+          return b.pnl >= 0 ? (T.profit || '#16A34A') : (T.loss || '#DC2626');
+        }),
+        borderWidth: bubbles.map(b => (b.count > 0 ? 1 : 0)),
+        hoverBorderWidth: 2,
+      }],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 400 },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          backgroundColor: T.tipBg || '#1E293B',
+          titleColor: T.text || '#F8FAFC',
+          bodyColor: T.textMuted || '#94A3B8',
+          borderColor: T.tipBorder || '#334155',
+          borderWidth: 1,
+          padding: 10,
+          bodyFont: { family: "'SF Mono',monospace", size: 12 },
+          callbacks: {
+            title: () => '',
+            label: c => {
+              const b = bubbles[c.dataIndex];
+              if (!b || b.count === 0) return '';
+              const pnlColor = b.pnl >= 0 ? '🟢' : '🔴';
+              return [`${b.day} ${b.x}:00`, `${pnlColor} $${b.pnl.toFixed(0)} · ${b.count} trades`];
+            },
+          },
+        },
+      },
+      scales: {
+        x: {
+          min: -0.5,
+          max: 23.5,
+          grid: { color: T.grid || 'rgba(148,163,184,0.08)', drawBorder: false },
+          ticks: {
+            color: T.textMuted || '#94A3B8',
+            font: { size: 9, family: "'SF Mono',monospace" },
+            stepSize: 3,
+            callback: v => v + ':00',
+          },
+          title: { display: true, text: 'Hour (UTC)', color: T.textMuted || '#94A3B8', font: { size: 10 } },
+        },
+        y: {
+          min: -0.5,
+          max: 6.5,
+          reverse: true,
+          grid: { color: T.grid || 'rgba(148,163,184,0.08)', drawBorder: false },
+          ticks: {
+            color: T.textMuted || '#94A3B8',
+            font: { size: 10, weight: '500' },
+            callback: v => days[v] || '',
+          },
+        },
+      },
+    },
+  });
 
-    _container = container;
-    _lastBotId = botId;
-    _lastTimeframe = timeframe;
+  const ro = new ResizeObserver(() => chart.resize());
+  ro.observe(container);
 
-    const T = window.ThemeColors();
-    const trades = data.trades || [];
-    if (!trades.length) {
-      container.innerHTML = '<div style="color:var(--text-secondary);font-size:var(--text-sm);padding:16px;">No trade data for this timeframe</div>';
-      return;
-    }
-
-    const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-    const hours = Array.from({ length: 24 }, (_, i) => i);
-    const matrix = {};
-
-    trades.forEach((t, idx) => {
-      const d = new Date(t.date);
-      let dayIdx = d.getDay() - 1;
-      if (dayIdx < 0) dayIdx = 6;
-      const hourIdx = simpleHash(t.date + t.pair + idx) % 24;
-      const key = `${dayIdx}-${hourIdx}`;
-      if (!matrix[key]) matrix[key] = { pnl: 0, count: 0 };
-      matrix[key].pnl += t.pnl;
-      matrix[key].count++;
-    });
-
-    const cellSize = 18;
-    const gap = 3;
-    const labelWidth = 32;
-    const headerHeight = 20;
-    const width = labelWidth + hours.length * (cellSize + gap);
-    const height = headerHeight + days.length * (cellSize + gap);
-
-    let svg = `<svg class="heatmap-svg" viewBox="0 0 ${width} ${height}" preserveAspectRatio="xMidYMid meet">`;
-
-    hours.filter(h => h % 3 === 0).forEach(h => {
-      svg += `<text x="${labelWidth + h * (cellSize + gap) + cellSize / 2}" y="12" text-anchor="middle" fill="${T.textTertiary}" font-size="9px" font-family="'SF Mono', monospace">${h}:00</text>`;
-    });
-
-    days.forEach((day, di) => {
-      svg += `<text x="${labelWidth - 4}" y="${headerHeight + di * (cellSize + gap) + cellSize / 2 + 3}" text-anchor="end" fill="${T.textMuted}" font-size="10px" font-weight="500">${day}</text>`;
-
-      hours.forEach(h => {
-        const key = `${di}-${h}`;
-        const data = matrix[key] || { pnl: 0, count: 0 };
-        const x = labelWidth + h * (cellSize + gap);
-        const y = headerHeight + di * (cellSize + gap);
-        const fill = data.count > 0 ? getPnlColor(data.pnl) : T.canvasBg;
-
-        svg += `<rect class="heatmap-cell" data-day="${day}" data-hour="${h}" data-pnl="${data.pnl.toFixed(0)}" data-count="${data.count}" x="${x}" y="${y}" width="${cellSize}" height="${cellSize}" rx="3" fill="${fill}"/>`;
-      });
-    });
-
-    svg += `</svg>`;
-
-    container.innerHTML = `<div style="position:relative;">${svg}<div id="heatmapTooltip" class="heatmap-tooltip" style="display:none;position:fixed;padding:8px 12px;background:var(--tip-bg);border:1px solid var(--tip-border);border-radius:8px;font-size:11px;font-family:var(--sans);box-shadow:var(--shadow-md);pointer-events:none;z-index:100;"></div></div>`;
-
-    const tooltip = container.querySelector('#heatmapTooltip');
-
-    container.querySelectorAll('.heatmap-cell').forEach(el => {
-      el.addEventListener('mouseenter', function() {
-        const count = parseInt(this.dataset.count);
-        if (count === 0) return;
-        const pnl = parseFloat(this.dataset.pnl);
-        const day = this.dataset.day;
-        const hour = this.dataset.hour;
-        const pnlClass = pnl >= 0 ? 'text-profit' : 'text-loss';
-        tooltip.innerHTML = `<div class="tooltip-label">${day} ${hour}:00</div><div class="tooltip-value ${pnlClass}">$${pnl.toFixed(0)}</div><div class="tooltip-label">${count} trades</div>`;
-        tooltip.classList.add('visible');
-        tooltip.style.display = 'block';
-      });
-      el.addEventListener('mousemove', function(e) {
-        tooltip.style.left = (e.clientX + 12) + 'px';
-        tooltip.style.top = (e.clientY - 8) + 'px';
-      });
-      el.addEventListener('mouseleave', () => {
-        tooltip.classList.remove('visible');
-        tooltip.style.display = 'none';
-      });
-    });
-
-    setupObservers(botId, timeframe);
-    } finally { _rendering = false; }
-  }
-
-  function cleanup() {
-    _rendering = false;
-    if (_ro) { _ro.disconnect(); _ro = null; }
-    if (_themeObs) { _themeObs.disconnect(); _themeObs = null; }
-    if (_container) { _container.innerHTML = ''; }
-    _container = null;
-  }
-
-  function setupObservers(botId, timeframe) {
-    if (!_container) return;
-    _ro = new ResizeObserver(() => render(_container, botId, timeframe));
-    _ro.observe(_container);
-    _themeObs = new MutationObserver(() => render(_container, botId, timeframe));
-    _themeObs.observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
-  }
-
-  function update(botId, timeframe) {
-    _lastBotId = botId;
-    _lastTimeframe = timeframe;
-    render(_container, botId, timeframe);
-  }
-
-  return { render, update, destroy: cleanup };
-})();
+  return {
+    destroy() {
+      ro.disconnect();
+      chart.destroy();
+      container.innerHTML = '';
+    },
+  };
+}

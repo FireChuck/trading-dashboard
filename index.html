@@ -5,198 +5,79 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Multi-Bot Trading Analytics</title>
   <link rel="stylesheet" href="css/styles.css">
-  <!-- CDN Libraries -->
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.7/dist/chart.umd.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/d3@7.9.0/dist/d3.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/apexcharts"></script>
 </head>
 <body>
-  <!-- Header -->
-  <header class="header">
-    <div class="header-inner">
-      <div class="header-left">
+  <!-- App Shell -->
+  <div id="app-shell">
+    <!-- Sidebar -->
+    <aside id="sidebar" class="sidebar">
+      <div class="sidebar-header">
         <button class="logo-btn" id="logoBtn" title="Dashboard Home" aria-label="Navigate to landing page">📊</button>
-        <nav class="bot-switcher" id="botSwitcher" role="tablist" aria-label="Select trading bot"></nav>
+        <span class="sidebar-title">Trading Analytics</span>
+        <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">✕</button>
       </div>
-      <div class="header-right">
-        <div class="timeframe-selector" id="timeframeSelector" role="group" aria-label="Select timeframe">
-          <button class="tf-btn active" data-tf="daily">Daily</button>
-          <button class="tf-btn" data-tf="weekly">Weekly</button>
-          <button class="tf-btn" data-tf="monthly">Monthly</button>
-        </div>
-        <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+
+      <!-- Bot Selector -->
+      <div class="sidebar-section">
+        <label class="sidebar-label" for="botSelect">Bot</label>
+        <select id="botSelect" class="sidebar-select">
+          <!-- populated by JS -->
+        </select>
+      </div>
+
+      <!-- Timeframe Selector -->
+      <div class="sidebar-section">
+        <label class="sidebar-label" for="timeframeSelect">Timeframe</label>
+        <select id="timeframeSelect" class="sidebar-select">
+          <option value="daily">Daily</option>
+          <option value="weekly">Weekly</option>
+          <option value="monthly">Monthly</option>
+        </select>
+      </div>
+
+      <!-- Viz Navigation -->
+      <nav class="sidebar-nav" id="vizNav" aria-label="Visualization navigation">
+        <div class="sidebar-label">Visualizations</div>
+        <a href="#/dashboard" class="nav-item active" data-viz="dashboard">📋 KPI Overview</a>
+        <a href="#/viz/equity-curve" class="nav-item" data-viz="equity-curve">📈 Equity Curve</a>
+        <a href="#/viz/pnl-by-pair" class="nav-item" data-viz="pnl-by-pair">💱 P&L by Pair</a>
+        <a href="#/viz/avg-trade-pnl" class="nav-item" data-viz="avg-trade-pnl">📊 Avg Trade P&L</a>
+        <a href="#/viz/max-drawdown" class="nav-item" data-viz="max-drawdown">📉 Max Drawdown</a>
+        <a href="#/viz/win-rate" class="nav-item" data-viz="win-rate">🎯 Win Rate</a>
+        <a href="#/viz/profit-factor" class="nav-item" data-viz="profit-factor">⚡ Profit Factor</a>
+        <a href="#/viz/sharpe" class="nav-item" data-viz="sharpe">📐 Sharpe Ratio</a>
+        <a href="#/viz/trade-heatmap" class="nav-item" data-viz="trade-heatmap">🗺️ Trade Heatmap</a>
+        <a href="#/compare" class="nav-item nav-item-compare" data-viz="compare">⚖️ Compare Bots</a>
+      </nav>
+
+      <!-- Theme Toggle -->
+      <div class="sidebar-footer">
+        <button class="theme-toggle-btn" id="themeToggle" aria-label="Toggle theme">
           <span id="themeIcon">☀️</span>
+          <span id="themeLabel">Light</span>
         </button>
       </div>
-    </div>
-  </header>
+    </aside>
 
-  <!-- Landing Page -->
-  <main class="main" id="landingPage" style="display:none;">
-    <div class="landing-container" id="landingContainer"></div>
-  </main>
+    <!-- Overlay for mobile -->
+    <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-  <!-- Dashboard -->
-  <main class="main" id="dashboardMain">
-    <!-- Bot Info -->
-    <div class="bot-info">
-      <div class="bot-info-name" id="botName">—</div>
-      <div class="bot-info-tagline" id="botTagline">—</div>
-    </div>
+    <!-- Main Content Area -->
+    <main class="main-content">
+      <!-- Top Bar (mobile hamburger) -->
+      <header class="topbar">
+        <button class="hamburger" id="hamburgerBtn" aria-label="Open menu">☰</button>
+        <span class="topbar-title" id="topbarTitle">KPI Overview</span>
+      </header>
 
-    <!-- Dashboard Grid — 20 Viz Cards -->
-    <div class="dashboard-grid" id="dashboardGrid">
+      <!-- SPA Viewport -->
+      <div id="app" class="app-viewport"></div>
+    </main>
+  </div>
 
-      <!-- A1: KPI Overview -->
-      <div class="card" id="card-kpi">
-        <div class="card-header"><span class="card-title">Key Metrics</span></div>
-        <div class="card-body"><div class="kpi-grid" id="kpiGrid"></div></div>
-      </div>
-
-      <!-- A2: Equity Curve -->
-      <div class="card" id="card-equity">
-        <div class="card-header"><span class="card-title">Equity Curve</span></div>
-        <div class="card-body"><div class="chart-container"><canvas id="equityChart"></canvas></div></div>
-      </div>
-
-      <!-- A3: Trade Heatmap -->
-      <div class="card" id="card-heatmap">
-        <div class="card-header"><span class="card-title">Trade Heatmap</span></div>
-        <div class="card-body"><div class="heatmap-wrapper" id="heatmapContainer"></div></div>
-      </div>
-
-      <!-- A4: P&L by Pair -->
-      <div class="card" id="card-pnl-pair">
-        <div class="card-header"><span class="card-title">P&L by Pair</span></div>
-        <div class="card-body"><div class="chart-container"><canvas id="pnlPairChart"></canvas></div></div>
-      </div>
-
-      <!-- A5: Risk Radar -->
-      <div class="card" id="card-risk">
-        <div class="card-header"><span class="card-title">Risk Profile</span></div>
-        <div class="card-body"><div class="chart-container"><canvas id="riskRadarChart"></canvas></div></div>
-      </div>
-
-      <!-- A6: Trade Distribution -->
-      <div class="card" id="card-distribution">
-        <div class="card-header"><span class="card-title">R:R Distribution</span></div>
-        <div class="card-body"><div class="chart-container"><canvas id="distributionChart"></canvas></div></div>
-      </div>
-
-      <!-- A7: Session Analytics -->
-      <div class="card" id="card-session">
-        <div class="card-header"><span class="card-title">Session Analytics</span></div>
-        <div class="card-body" id="sessionContainer"></div>
-      </div>
-
-      <!-- A8: Correlation Matrix -->
-      <div class="card" id="card-correlation">
-        <div class="card-header"><span class="card-title">Correlation Matrix</span></div>
-        <div class="card-body" id="correlationContainer"></div>
-      </div>
-
-      <!-- A9: Allocation Treemap -->
-      <div class="card" id="card-treemap">
-        <div class="card-header"><span class="card-title">Allocation Treemap</span></div>
-        <div class="card-body" id="treemapContainer"></div>
-      </div>
-
-      <!-- A10: Signal Timeline -->
-      <div class="card" id="card-signal-timeline">
-        <div class="card-header"><span class="card-title">Signal Timeline</span></div>
-        <div class="card-body" id="signalTimelineContainer"></div>
-      </div>
-
-      <!-- B11: Win Rate Donut -->
-      <div class="card" id="card-win-rate">
-        <div class="card-header"><span class="card-title">Win Rate</span></div>
-        <div class="card-body" id="winRateContainer"></div>
-      </div>
-
-      <!-- B12: Profit Factor Gauge -->
-      <div class="card" id="card-profit-factor">
-        <div class="card-header"><span class="card-title">Profit Factor</span></div>
-        <div class="card-body" id="profitFactorContainer"></div>
-      </div>
-
-      <!-- B13: Max Drawdown Area -->
-      <div class="card" id="card-max-dd">
-        <div class="card-header"><span class="card-title">Max Drawdown</span></div>
-        <div class="card-body" id="maxDrawdownContainer"></div>
-      </div>
-
-      <!-- B14: Sharpe Scorecard -->
-      <div class="card" id="card-sharpe">
-        <div class="card-header"><span class="card-title">Sharpe Ratio</span></div>
-        <div class="card-body" id="sharpeContainer"></div>
-      </div>
-
-      <!-- B15: Avg Trade P&L -->
-      <div class="card" id="card-avg-pnl">
-        <div class="card-header"><span class="card-title">Avg Trade P&L</span></div>
-        <div class="card-body" id="avgTradePnlContainer"></div>
-      </div>
-
-      <!-- B16: Total Trades -->
-      <div class="card" id="card-total-trades">
-        <div class="card-header"><span class="card-title">Total Trades</span></div>
-        <div class="card-body" id="totalTradesContainer"></div>
-      </div>
-
-      <!-- B17: Best/Worst Trade -->
-      <div class="card" id="card-best-worst">
-        <div class="card-header"><span class="card-title">Best / Worst Trade</span></div>
-        <div class="card-body" id="bestWorstContainer"></div>
-      </div>
-
-      <!-- B18: Consecutive Streaks -->
-      <div class="card" id="card-streaks">
-        <div class="card-header"><span class="card-title">Win/Loss Streaks</span></div>
-        <div class="card-body" id="streaksContainer"></div>
-      </div>
-
-      <!-- B19: Risk/Reward Scatter -->
-      <div class="card" id="card-risk-reward">
-        <div class="card-header"><span class="card-title">Risk/Reward Scatter</span></div>
-        <div class="card-body" id="riskRewardContainer"></div>
-      </div>
-
-      <!-- B20: Monthly P&L Waffle -->
-      <div class="card" id="card-monthly-pnl">
-        <div class="card-header"><span class="card-title">Monthly P&L</span></div>
-        <div class="card-body" id="monthlyPnlContainer"></div>
-      </div>
-
-    </div>
-  </main>
-
-  <!-- Heatmap Tooltip -->
-  <div class="heatmap-tooltip" id="heatmapTooltip"></div>
-
-  <!-- Scripts -->
+  <!-- Scripts: theme + mock-data loaded synchronously, app.js is SPA controller -->
   <script src="js/theme.js"></script>
   <script src="js/mock-data.js"></script>
-  <script src="js/viz-kpi-overview.js"></script>
-  <script src="js/viz-equity-curve.js"></script>
-  <script src="js/viz-trade-heatmap.js"></script>
-  <script src="js/viz-pnl-by-pair.js"></script>
-  <script src="js/viz-risk-radar.js"></script>
-  <script src="js/viz-trade-distribution.js"></script>
-  <script src="js/viz-session-analytics.js"></script>
-  <script src="js/viz-correlation-matrix.js"></script>
-  <script src="js/viz-allocation-treemap.js"></script>
-  <script src="js/viz-signal-timeline.js"></script>
-  <script src="js/viz-win-rate-donut.js"></script>
-  <script src="js/viz-profit-factor-gauge.js"></script>
-  <script src="js/viz-max-drawdown-area.js"></script>
-  <script src="js/viz-sharpe-scorecard.js"></script>
-  <script src="js/viz-avg-trade-pnl.js"></script>
-  <script src="js/viz-total-trades.js"></script>
-  <script src="js/viz-best-worst-trade.js"></script>
-  <script src="js/viz-consecutive-streaks.js"></script>
-  <script src="js/viz-risk-reward-scatter.js"></script>
-  <script src="js/viz-monthly-pnl-waffle.js"></script>
-  <script src="js/landing-page.js"></script>
   <script src="js/app.js"></script>
 </body>
 </html>

@@ -1,42 +1,56 @@
-// theme.js — Provides window.ThemeColors() for all viz modules
-// Reads CSS custom properties and maps them to the T.* namespace
-window.ThemeColors = (() => {
-  function getStyle(prop) {
-    return getComputedStyle(document.documentElement).getPropertyValue(prop).trim();
+// theme.js — Dark/Light mode with system preference detection + localStorage
+(function () {
+  const STORAGE_KEY = 'dashboard-theme';
+
+  function getSystemTheme() {
+    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   }
 
-  function read() {
-    const dark = document.documentElement.getAttribute('data-theme') === 'dark';
-    return {
-      dark,
-      bg: getStyle('--bg-primary'),
-      bgSecondary: getStyle('--bg-secondary'),
-      cardBg: getStyle('--bg-surface'),
-      text: getStyle('--text-primary'),
-      textMuted: getStyle('--text-muted'),
-      textTertiary: getStyle('--text-tertiary'),
-      textContent: getStyle('--text-secondary'),
-      muted: getStyle('--text-muted'),
-      profit: getStyle('--profit'),
-      loss: getStyle('--loss'),
-      red: getStyle('--loss'),
-      green: getStyle('--profit'),
-      yellow: getStyle('--warning'),
-      accent: getStyle('--accent'),
-      grid: getStyle('--chart-grid'),
-      gridLine: getStyle('--chart-grid'),
-      line: getStyle('--border-light'),
-      border: getStyle('--border-color'),
-      canvasBg: getStyle('--canvas-bg'),
-      track: getStyle('--border-light'),
-      dot: getStyle('--text-secondary'),
-      tipBg: getStyle('--tooltip-bg'),
-      tipBorder: getStyle('--tooltip-border'),
-      wm: getStyle('--text-tertiary'),
-      empty: getStyle('--bg-surface'),
-      lossFill: getStyle('--loss-bg'),
+  function getStoredTheme() {
+    try { return localStorage.getItem(STORAGE_KEY); } catch { return null; }
+  }
+
+  function resolveTheme() {
+    return getStoredTheme() || getSystemTheme();
+  }
+
+  function apply(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    try { localStorage.setItem(STORAGE_KEY, theme); } catch {}
+    // Dispatch for viz modules that listen
+    window.dispatchEvent(new CustomEvent('themechange', { detail: { theme } }));
+  }
+
+  function toggle() {
+    const current = document.documentElement.getAttribute('data-theme');
+    apply(current === 'dark' ? 'light' : 'dark');
+  }
+
+  // Init: apply resolved theme immediately (before paint if possible)
+  apply(resolveTheme());
+
+  // Listen for system preference changes
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+    if (!getStoredTheme()) apply(e.matches ? 'dark' : 'light');
+  });
+
+  // Expose
+  window.Theme = { toggle, apply, current: () => document.documentElement.getAttribute('data-theme') || 'light' };
+  window.ThemeColors = (() => {
+    function get(p) { return getComputedStyle(document.documentElement).getPropertyValue(p).trim(); }
+    return function () {
+      const dark = document.documentElement.getAttribute('data-theme') === 'dark';
+      return {
+        dark, bg: get('--bg-primary'), bgSecondary: get('--bg-surface'),
+        cardBg: get('--bg-surface'), text: get('--text-primary'),
+        textMuted: get('--text-muted'), textContent: get('--text-secondary'),
+        muted: get('--text-muted'), profit: get('--profit'), loss: get('--loss'),
+        red: get('--loss'), green: get('--profit'), yellow: get('--warning'),
+        accent: get('--accent'), grid: get('--chart-grid'), gridLine: get('--chart-grid'),
+        border: get('--border-color'), canvasBg: get('--bg-surface'),
+        tipBg: get('--tooltip-bg'), tipBorder: get('--tooltip-border'),
+        lossFill: get('--loss-bg'),
+      };
     };
-  }
-
-  return read;
+  })();
 })();
